@@ -6,7 +6,7 @@ Created on Sat Nov 26 20:20:10 2022
 """
 
 import sys
-from PyQt5 import QtWidgets, QtCore, uic
+from PyQt5 import QtWidgets
 import mainwindow
 
 
@@ -16,8 +16,8 @@ if __name__ == "__main__":
     # splash = QtWidgets.QSplashScreen(pixmap.scaled(QtCore.QSize(500, 500), QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation))
     # splash.show()
     #app.processEvents()
-    mainWindow = mainwindow.Window()
+    mainWindow = mainwindow.Window(app)
     mainWindow.show()
-    # mainWindow.start()
+    mainWindow.start()
     # splash.finish(mainWindow)
     app.exec_()
