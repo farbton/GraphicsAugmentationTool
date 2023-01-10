@@ -126,26 +126,66 @@ class Window(QMainWindow):
             imagelist = self.pil_imagelist_contrast
         if self.mode == "sharpness":
             imagelist = self.pil_imagelist_sharpness
-        if self.mode == "rotation":
-            imagelist = self.pil_imagelist_rotation
-            
+                    
         row = 0
         col = 0
         for i, (image, name, value) in enumerate(imagelist):
-            if i % 5 == 0 :
+            
+            if (i % 5  == 0) and (i > 0):
                 row += 1
                 col  = 0
                 
-            pm_width_new = (gv_width - 50)//5  # 50 = offset Zwischenraum zwischen den Bildern
+            pm_width_new = (gv_width - 70)//5  # 70 = offset Zwischenraum zwischen den Bildern
             images_per_col = gv_height / (pm_width_new / (16/9))
             pm_height_new = gv_height / images_per_col
             qimage = ImageQt.ImageQt(image)
             pixmap = QPixmap.fromImage(qimage)
             pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_width_new, pm_height_new ))
             pixmap_item.setPos(col*(pm_width_new+10),row * (pm_height_new + 10))
-            pixmap_item.setFlag(QGraphicsItem.ItemIsMovable)
+            # pixmap_item.setFlag(QGraphicsItem.ItemIsMovable)
             self.gv_preview.setScene(self.scene)
             col += 1
+            
+
+    def show_pil_imagelist_rotation_in_gv(self):
+        self.scene.clear()
+        gv_width, gv_height = self.get_gv_height_and_width()
+        imagelist = [] 
+        imagelist = self.pil_imagelist_rotation
+        row = 0
+        col = 0
+        
+        for i, (image, name, angle) in enumerate(imagelist):
+            
+            if (i % 5  == 0) and (i > 0) :
+                row += 1
+                col  = 0
+            
+            if angle==90 or angle==270:
+                pm_width_new = (gv_width - 40)//3  # 70 = offset Zwischenraum zwischen den Bildern
+                images_per_col = gv_height / (pm_width_new / (16/9))
+                pm_height_new = gv_height / images_per_col
+                
+                qimage = ImageQt.ImageQt(image)
+                print(qimage.size())
+                pixmap = QPixmap.fromImage(qimage)
+                pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_height_new, pm_width_new))
+                pixmap_item.setPos(col*(pm_width_new+10),row * (pm_height_new + 10))
+                self.gv_preview.setScene(self.scene)
+                col += 1
+            else:
+                pm_width_new = (gv_width - 40)//3  # 70 = offset Zwischenraum zwischen den Bildern
+                images_per_col = gv_height / (pm_width_new / (16/9))
+                pm_height_new = gv_height / images_per_col
+                
+                qimage = ImageQt.ImageQt(image)
+                print(qimage.size())
+                pixmap = QPixmap.fromImage(qimage)
+                pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_width_new, pm_height_new))
+                pixmap_item.setPos(col*(pm_width_new-(pm_height_new / 2)+10),row * (pm_height_new + 10))
+                self.gv_preview.setScene(self.scene)
+                col += 1
+                
 
     def brightness(self):
         self.mode = "brightness"
@@ -201,10 +241,11 @@ class Window(QMainWindow):
         self.info2_text = False
         self.print_mode_in_console()
         self.rotation = rotation.Rotation(self.lw_sourcefolder,
-                                             self.source_folder_path)
+                                          self.source_folder_path)
         
-        self.pil_imagelist_rotation = self.rotation.preview_rotation_oneImage()
-        self.show_pil_imagelist_in_gv()
+        self.pil_imagelist_rotation, self.txt_filelist_rotation = \
+            self.rotation.preview_rotation_oneImage()
+        self.show_pil_imagelist_rotation_in_gv()
 
     def print_mode_in_console(self):
         self.lb_console.setText("Mode: " + str(self.mode))
@@ -226,6 +267,12 @@ class Window(QMainWindow):
             self.writer.write_files_to_disk(self.pil_imagelist_sharpness,
                                             self.txt_list,
                                             self.mode)
+        if self.mode == "rotation":            
+            self.writer.write_rotated_files_oneImage(
+                self.pil_imagelist_rotation, 
+                self.txt_filelist_rotation,
+                self.mode)
+            
                     
     def save_all_files(self):
         if self.mode == "brightness":
@@ -248,6 +295,14 @@ class Window(QMainWindow):
             self.writer.write_files_to_disk(self.pil_imagelist_sharpness_allImages,
                                             self.txt_list,
                                             self.mode)
+            
+        if self.mode == "rotation":
+            self.pil_imagelist_rotation_allImages, self.txt_filelist_rotation_all\
+                = self.rotation.change_rotation_allImages()
+            self.writer.write_rotated_files_allImages\
+                (self.pil_imagelist_rotation_allImages,
+                 self.txt_filelist_rotation_all,
+                 self.mode)
     
     def determine_finished_images(self):    
         count_listwidget = len(self.lw_sourcefolder)
@@ -271,24 +326,29 @@ class Window(QMainWindow):
         
     def preview_item(self):
         if self.mode == "brightness":
-            self.pil_imagelist_brightness =  self.brightness.preview_brightness_oneImage()
+            self.pil_imagelist_brightness = \
+                self.brightness.preview_brightness_oneImage()
             self.show_pil_imagelist_in_gv()
             
         if self.mode == "saturation":
-            self.pil_imagelist_saturation = self.saturation.preview_saturation_oneImage()
+            self.pil_imagelist_saturation = \
+                self.saturation.preview_saturation_oneImage()
             self.show_pil_imagelist_in_gv()
             
         if self.mode == "contrast":
-            self.pil_imagelist_contrast = self.contrast.preview_contrast_oneImage()
+            self.pil_imagelist_contrast = \
+                self.contrast.preview_contrast_oneImage()
             self.show_pil_imagelist_in_gv()
 
         if self.mode == "sharpness":
-            self.pil_imagelist_sharpness = self.sharpness.preview_sharpness_oneImage()
+            self.pil_imagelist_sharpness = \
+                self.sharpness.preview_sharpness_oneImage()
             self.show_pil_imagelist_in_gv()
 
         if self.mode == "rotation":
-            self.pil_imagelist_rotation = self.rotation.preview_rotation_oneImage()
-            self.show_pil_imagelist_in_gv()
+            self.pil_imagelist_rotation, self.txt_filelist_rotation = \
+                self.rotation.preview_rotation_oneImage()
+            self.show_pil_imagelist_rotation_in_gv()
 
 
 
