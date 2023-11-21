@@ -98,7 +98,8 @@ class Window(QMainWindow):
     def open_destinationfolder(self):
         self.destination_folder_path = QFileDialog.getExistingDirectory()
         if self.destination_folder_path:
-            print(self.destination_folder_path)
+            self.writer = writer.Writer(self, self.source_folder_path, self.destination_folder_path)
+            #print(self.destination_folder_path)
                
     def show_filenames_in_listwidget_sourcefolder(self):
         self.lw_sourcefolder.clear()
@@ -167,7 +168,7 @@ class Window(QMainWindow):
                 pm_height_new = gv_height / images_per_col
                 
                 qimage = ImageQt.ImageQt(image)
-                print(qimage.size())
+                # print(qimage.size())
                 pixmap = QPixmap.fromImage(qimage)
                 pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_height_new, pm_width_new))
                 pixmap_item.setPos(col*(pm_width_new+10),row * (pm_height_new + 10))
@@ -179,7 +180,7 @@ class Window(QMainWindow):
                 pm_height_new = gv_height / images_per_col
                 
                 qimage = ImageQt.ImageQt(image)
-                print(qimage.size())
+                # print(qimage.size())
                 pixmap = QPixmap.fromImage(qimage)
                 pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_width_new, pm_height_new))
                 pixmap_item.setPos(col*(pm_width_new-(pm_height_new / 2)+10),row * (pm_height_new + 10))

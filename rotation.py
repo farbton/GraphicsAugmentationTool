@@ -8,7 +8,7 @@ Created on Fri Jan  6 13:37:43 2023
 import os
 import numpy as np
 from PyQt5 import QtCore
-from PIL import Image, ImageEnhance
+from PIL import Image
 
 class Rotation(QtCore.QObject):
     def __init__(self, lw_sourcefolder, source_folder_path):
