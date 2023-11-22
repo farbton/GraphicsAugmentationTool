@@ -16,7 +16,7 @@ class Window(QMainWindow):
     
     def __init__(self, app):       
         super(Window, self).__init__()       
-        uic.loadUi("AugmentationTool_GUI.ui", self)
+        uic.loadUi("AugmentationTool_GUI_test.ui", self)
         self.source_folder_path = "source/"
         self.destination_folder_path = "destination/"
         self.setWindowTitle("Augmentation Tool for Images")
@@ -76,8 +76,13 @@ class Window(QMainWindow):
         self.show_filenames_in_listwidget_sourcefolder()
         # self.print_info2_text_in_gv()
         self.print_sourcefolder_path()
+        self.print_imagecounter()
         
-     
+    def print_imagecounter(self):
+        counter = 0
+        counter = self.lw_sourcefolder.count()
+        self.lb_imagecounter.setText(str(counter))
+        
     def open_sourcefolder(self):
         self.source_folder_path = QFileDialog.getExistingDirectory()
         if self.source_folder_path:
@@ -88,6 +93,7 @@ class Window(QMainWindow):
             self.show_filenames_in_listwidget_sourcefolder()
             self.print_info2_text_in_gv()
             self.print_sourcefolder_path()
+            self.print_imagecounter()
      
     def print_sourcefolder_path(self):
         self.lb_sourcefolder_path.setText(self.source_folder_path[:10] + "..." + self.source_folder_path[-30:])
@@ -99,6 +105,7 @@ class Window(QMainWindow):
         self.destination_folder_path = QFileDialog.getExistingDirectory()
         if self.destination_folder_path:
             self.writer = writer.Writer(self, self.source_folder_path, self.destination_folder_path)
+            self.print_destinationfolder_path()
             #print(self.destination_folder_path)
                
     def show_filenames_in_listwidget_sourcefolder(self):
@@ -137,7 +144,8 @@ class Window(QMainWindow):
                 col  = 0
                 
             pm_width_new = (gv_width - 70)//5  # 70 = offset Zwischenraum zwischen den Bildern
-            images_per_col = gv_height / (pm_width_new / (16/9))
+            aspect_ratio = image.width / image.height # Seitenverhältnis
+            images_per_col = gv_height / (pm_width_new  / aspect_ratio) 
             pm_height_new = gv_height / images_per_col
             qimage = ImageQt.ImageQt(image)
             pixmap = QPixmap.fromImage(qimage)
@@ -151,20 +159,21 @@ class Window(QMainWindow):
     def show_pil_imagelist_rotation_in_gv(self):
         self.scene.clear()
         gv_width, gv_height = self.get_gv_height_and_width()
+        print(gv_width)
         imagelist = [] 
         imagelist = self.pil_imagelist_rotation
         row = 0
         col = 0
         
         for i, (image, name, angle) in enumerate(imagelist):
-            
+            aspect_ratio = image.width / image.height
             if (i % 5  == 0) and (i > 0) :
                 row += 1
                 col  = 0
             
             if angle==90 or angle==270:
                 pm_width_new = (gv_width - 40)//3  # 70 = offset Zwischenraum zwischen den Bildern
-                images_per_col = gv_height / (pm_width_new / (16/9))
+                images_per_col = gv_height / (pm_width_new / (1/aspect_ratio))
                 pm_height_new = gv_height / images_per_col
                 
                 qimage = ImageQt.ImageQt(image)
@@ -176,7 +185,7 @@ class Window(QMainWindow):
                 col += 1
             else:
                 pm_width_new = (gv_width - 40)//3  # 70 = offset Zwischenraum zwischen den Bildern
-                images_per_col = gv_height / (pm_width_new / (16/9))
+                images_per_col = gv_height / (pm_width_new / aspect_ratio)
                 pm_height_new = gv_height / images_per_col
                 
                 qimage = ImageQt.ImageQt(image)
@@ -199,6 +208,7 @@ class Window(QMainWindow):
         
         self.pil_imagelist_brightness = self.brightness.preview_brightness_oneImage()
         self.show_pil_imagelist_in_gv()
+        self.determine_finished_images()
         
     def saturation(self):
         self.mode = "saturation"
@@ -211,6 +221,7 @@ class Window(QMainWindow):
         
         self.pil_imagelist_saturation = self.saturation.preview_saturation_oneImage()
         self.show_pil_imagelist_in_gv()
+        self.determine_finished_images()
 
     def contrast(self):
         self.mode = "contrast"
@@ -223,6 +234,7 @@ class Window(QMainWindow):
         
         self.pil_imagelist_contrast = self.contrast.preview_contrast_oneImage()
         self.show_pil_imagelist_in_gv()
+        self.determine_finished_images()
 
     def sharpness(self):
         self.mode = "sharpness"
@@ -235,6 +247,7 @@ class Window(QMainWindow):
         
         self.pil_imagelist_sharpness = self.sharpness.preview_sharpness_oneImage()
         self.show_pil_imagelist_in_gv()
+        self.determine_finished_images()
         
     def rotation(self):
         self.mode = "rotation"
@@ -247,6 +260,7 @@ class Window(QMainWindow):
         self.pil_imagelist_rotation, self.txt_filelist_rotation = \
             self.rotation.preview_rotation_oneImage()
         self.show_pil_imagelist_rotation_in_gv()
+        self.determine_finished_images()
 
     def print_mode_in_console(self):
         self.lb_console.setText("Mode: " + str(self.mode))
@@ -327,6 +341,7 @@ class Window(QMainWindow):
         
     def preview_item(self):
         if self.mode == "brightness":
+            self.determine_finished_images()
             self.pil_imagelist_brightness = \
                 self.brightness.preview_brightness_oneImage()
             self.show_pil_imagelist_in_gv()

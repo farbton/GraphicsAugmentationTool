@@ -19,7 +19,7 @@ class Writer():
         # file_ext  = ".jpg"
         for (image, fullname, value) in pil_imagelist:
             head, tail = os.path.splitext(fullname)
-            new_file_name = head + "_" + str(value) + "_" + str(mode) + tail
+            new_file_name = head + "_" + str(value) + "_" + str(mode)[0:2] + tail
             new_file_path = self.destination_folder_path + "\\" + new_file_name
             image.save(new_file_path)
             self.write_txtfile_to_disk(fullname, value, mode)
@@ -33,7 +33,7 @@ class Writer():
             print("%s folder is not writeable.")
 
         head, tail = os.path.splitext(fullname)
-        new_filename = head + "_" + str(value) + "_" + str(mode) + ".txt"
+        new_filename = head + "_" + str(value) + "_" + str(mode)[0:2] + ".txt"
         new_file_path = self.destination_folder_path + "\\" + new_filename
         with open(self.source_folder_path + "/"+  head + ".txt", "r") as txtfile:
             # print(txtfile)
@@ -50,7 +50,7 @@ class Writer():
             bbox_list = txt_list[number]
             image, fullname, angle = img_name_mode_list
             head, tail = os.path.splitext(fullname)
-            new_file_name = head + "_" + str(angle) + "_" + str(mode) + tail
+            new_file_name = head + "_" + str(angle) + "_" + str(mode)[0:2] + tail
             new_file_path = self.destination_folder_path + "\\" + new_file_name
             image.save(new_file_path)
             self.write_rotate_bbox_list(bbox_list, fullname, angle, mode)
@@ -74,7 +74,7 @@ class Writer():
         # print("fullnmae: ", fullname)
         head, tail = os.path.splitext(fullname)
         # print("tail: " , tail)
-        new_file_name = head + "_" +  str(angle) + "_" + str(mode) + ".txt"
+        new_file_name = head + "_" +  str(angle) + "_" + str(mode)[0:2] + ".txt"
         new_file_path = self.destination_folder_path + "\\" + new_file_name
         new_file = open(new_file_path, "w")
         new_file.writelines(str(bbox) for bbox in bbox_list)
