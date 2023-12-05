@@ -6,8 +6,8 @@ Created on Sat Nov 26 20:23:50 2022
 """
 from PyQt5 import QtCore, uic
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QFileDialog, QGraphicsPixmapItem, QGridLayout, QLabel, QGraphicsItem, QGraphicsTextItem
-from PyQt5.QtGui import QPixmap, QPen, QFont
-from PIL import Image, ImageEnhance, ImageQt
+from PyQt5.QtGui import QPixmap, QPen, QFont, QImage
+from PIL import Image, ImageEnhance #, ImageQt
 import reader, writer, brightness, saturation, contrast, sharpness, rotation
 import os
 
@@ -21,10 +21,10 @@ class Window(QMainWindow):
         self.destination_folder_path = "destination/"
         self.setWindowTitle("Augmentation Tool for Images")
         self.screen = app.primaryScreen()
-        self.width  = self.screen.size().width()/2
-        self.height = self.screen.size().height()/2
-        self.left   = self.screen.size().width()/2 - self.width/2
-        self.top    = self.screen.size().height()/2 - self.height/2
+        self.width  = int(self.screen.size().width()/2)
+        self.height = int(self.screen.size().height()/2)
+        self.left   = int(self.screen.size().width()/2 - self.width/2)
+        self.top    = int(self.screen.size().height()/2 - self.height/2)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.lw_sourcefolder.resize(50,50)
         self.reader = reader.Reader()       
@@ -143,11 +143,11 @@ class Window(QMainWindow):
                 row += 1
                 col  = 0
                 
-            pm_width_new = (gv_width - 70)//5  # 70 = offset Zwischenraum zwischen den Bildern
+            pm_width_new = int((gv_width - 70)//5)  # 70 = offset Zwischenraum zwischen den Bildern
             aspect_ratio = image.width / image.height # Seitenverhältnis
             images_per_col = gv_height / (pm_width_new  / aspect_ratio) 
-            pm_height_new = gv_height / images_per_col
-            qimage = ImageQt.ImageQt(image)
+            pm_height_new = int(gv_height / images_per_col)
+            qimage = QImage(image.tobytes(),image.width, image.height, QImage.Format_RGB888)
             pixmap = QPixmap.fromImage(qimage)
             pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_width_new, pm_height_new ))
             pixmap_item.setPos(col*(pm_width_new+10),row * (pm_height_new + 10))
@@ -172,11 +172,11 @@ class Window(QMainWindow):
                 col  = 0
             
             if angle==90 or angle==270:
-                pm_width_new = (gv_width - 40)//3  # 70 = offset Zwischenraum zwischen den Bildern
+                pm_width_new = int((gv_width - 40)//3)  # 70 = offset Zwischenraum zwischen den Bildern
                 images_per_col = gv_height / (pm_width_new / (1/aspect_ratio))
-                pm_height_new = gv_height / images_per_col
+                pm_height_new = int(gv_height / images_per_col)
                 
-                qimage = ImageQt.ImageQt(image)
+                qimage = QImage(image.tobytes(),image.width, image.height, QImage.Format_RGB888)
                 # print(qimage.size())
                 pixmap = QPixmap.fromImage(qimage)
                 pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_height_new, pm_width_new))
@@ -184,11 +184,11 @@ class Window(QMainWindow):
                 self.gv_preview.setScene(self.scene)
                 col += 1
             else:
-                pm_width_new = (gv_width - 40)//3  # 70 = offset Zwischenraum zwischen den Bildern
+                pm_width_new = int((gv_width - 40)//3)  # 70 = offset Zwischenraum zwischen den Bildern
                 images_per_col = gv_height / (pm_width_new / aspect_ratio)
-                pm_height_new = gv_height / images_per_col
+                pm_height_new = int(gv_height / images_per_col)
                 
-                qimage = ImageQt.ImageQt(image)
+                qimage = QImage(image.tobytes(),image.width, image.height, QImage.Format_RGB888)
                 # print(qimage.size())
                 pixmap = QPixmap.fromImage(qimage)
                 pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_width_new, pm_height_new))
