@@ -7,9 +7,9 @@ Created on Sat Nov 26 20:23:50 2022
 from PyQt5 import QtCore, uic
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QFileDialog, QGraphicsPixmapItem, QGridLayout, QLabel, QGraphicsItem, QGraphicsTextItem
 from PyQt5.QtGui import QPixmap, QPen, QFont, QImage
-from PIL import Image, ImageEnhance #, ImageQt
+from PIL import Image, ImageEnhance , ImageQt
 import reader, writer, brightness, saturation, contrast, sharpness, rotation
-import os
+import os, numpy as np
 
 
 class Window(QMainWindow):
@@ -32,6 +32,7 @@ class Window(QMainWindow):
         self.info_text  = True
         self.info2_text = False
         self.pil_imagelist = []
+        self.pil_imagelist_rotation = []
         self.txt_list = []
         self.pil_imagelist_brightness = []
         self.pil_imagelist_brightness_allImages = []
@@ -122,6 +123,7 @@ class Window(QMainWindow):
         return  self.gv_preview.width(), self.gv_preview.height()
 
     def show_pil_imagelist_in_gv(self):
+        # print("Funktion: show_pil_imagelist_in_gv")
         self.scene.clear()
         gv_width, gv_height = self.get_gv_height_and_width()
         imagelist = []
@@ -137,17 +139,33 @@ class Window(QMainWindow):
                     
         row = 0
         col = 0
+        # print(imagelist)
         for i, (image, name, value) in enumerate(imagelist):
+            # print(image.mode)
+            # image.show()
+            if image.mode == "RGB":
+                imageformat = QImage.Format_RGB888
+            if image.mode == "RGBA":
+                imageformat = QImage.Format_RGBA8888
+            if image.mode == "L":
+                imageformat = QImage.Format_Grayscale8
+                
+                
+            
             
             if (i % 5  == 0) and (i > 0):
                 row += 1
                 col  = 0
                 
+            # os.system("pause")
             pm_width_new = int((gv_width - 70)//5)  # 70 = offset Zwischenraum zwischen den Bildern
+            # print("width: ", pm_width_new)
             aspect_ratio = image.width / image.height # Seitenverhältnis
             images_per_col = gv_height / (pm_width_new  / aspect_ratio) 
             pm_height_new = int(gv_height / images_per_col)
-            qimage = QImage(image.tobytes(),image.width, image.height, QImage.Format_RGB888)
+
+            qimage = QImage(image.tobytes(), image.width, image.height, imageformat)#Format_RGB888
+            
             pixmap = QPixmap.fromImage(qimage)
             pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_width_new, pm_height_new ))
             pixmap_item.setPos(col*(pm_width_new+10),row * (pm_height_new + 10))
@@ -159,15 +177,24 @@ class Window(QMainWindow):
     def show_pil_imagelist_rotation_in_gv(self):
         self.scene.clear()
         gv_width, gv_height = self.get_gv_height_and_width()
-        print(gv_width)
+        # print(gv_width)
         imagelist = [] 
         imagelist = self.pil_imagelist_rotation
         row = 0
         col = 0
         
         for i, (image, name, angle) in enumerate(imagelist):
+            
             aspect_ratio = image.width / image.height
-            if (i % 5  == 0) and (i > 0) :
+            
+            if image.mode == "RGB":
+                imageformat = QImage.Format_RGB888
+            if image.mode == "RGBA":
+                imageformat = QImage.Format_RGBA8888
+            if image.mode == "L":
+                imageformat = QImage.Format_Grayscale8
+                
+            if (i % 3  == 0) and (i > 0) :
                 row += 1
                 col  = 0
             
@@ -176,8 +203,8 @@ class Window(QMainWindow):
                 images_per_col = gv_height / (pm_width_new / (1/aspect_ratio))
                 pm_height_new = int(gv_height / images_per_col)
                 
-                qimage = QImage(image.tobytes(),image.width, image.height, QImage.Format_RGB888)
-                # print(qimage.size())
+                qimage = QImage(image.tobytes(),image.width, image.height, imageformat)
+
                 pixmap = QPixmap.fromImage(qimage)
                 pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_height_new, pm_width_new))
                 pixmap_item.setPos(col*(pm_width_new+10),row * (pm_height_new + 10))
@@ -188,16 +215,18 @@ class Window(QMainWindow):
                 images_per_col = gv_height / (pm_width_new / aspect_ratio)
                 pm_height_new = int(gv_height / images_per_col)
                 
-                qimage = QImage(image.tobytes(),image.width, image.height, QImage.Format_RGB888)
-                # print(qimage.size())
+                qimage = QImage(image.tobytes(),image.width, image.height, imageformat)
+
                 pixmap = QPixmap.fromImage(qimage)
                 pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_width_new, pm_height_new))
-                pixmap_item.setPos(col*(pm_width_new-(pm_height_new / 2)+10),row * (pm_height_new + 10))
+                # pixmap_item.setPos(col*(pm_width_new-(pm_height_new / 2)+10),row * (pm_height_new + 10))
+                pixmap_item.setPos(col*(pm_height_new+10),row * (pm_width_new + 10))
                 self.gv_preview.setScene(self.scene)
                 col += 1
                 
 
     def brightness(self):
+        # print("funktion: brightness")
         self.mode = "brightness"
         self.info_text = False
         self.info2_text = False
@@ -326,11 +355,12 @@ class Window(QMainWindow):
 
     def mousePressEvent(self, event):
         pos = event.localPos()
-        print("event.pos(): " , pos)
+        # print("event.pos(): " , pos)
 
     def resizeEvent(self, event):       
         
         self.show_pil_imagelist_in_gv()
+        self.show_pil_imagelist_rotation_in_gv()
         
         if self.info_text == True:
             self.print_info_text_in_gv()
@@ -340,6 +370,7 @@ class Window(QMainWindow):
             
         
     def preview_item(self):
+        # print("Funktion: preview_item")
         if self.mode == "brightness":
             self.determine_finished_images()
             self.pil_imagelist_brightness = \
@@ -365,6 +396,9 @@ class Window(QMainWindow):
             self.pil_imagelist_rotation, self.txt_filelist_rotation = \
                 self.rotation.preview_rotation_oneImage()
             self.show_pil_imagelist_rotation_in_gv()
+            
+        else:
+            self.lb_console.setText("Mode: " + str(self.mode))
 
 
 

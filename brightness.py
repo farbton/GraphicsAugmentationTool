@@ -42,6 +42,7 @@ class Brightness(QtCore.QObject):
     def change_brightness_oneImage(self, pil_image, factor):
         img_ieb    = ImageEnhance.Brightness(pil_image)
         img_bright = img_ieb.enhance(factor)
+        # img_bright.show()
         return img_bright
     
     def change_brightness_allImages(self):
