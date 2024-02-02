@@ -85,7 +85,12 @@ class Window(QMainWindow):
         self.lb_imagecounter.setText(str(counter))
         
     def open_sourcefolder(self):
-        self.source_folder_path = QFileDialog.getExistingDirectory()
+        
+        dir = QFileDialog.getExistingDirectory()
+        
+        if dir:
+            self.source_folder_path = dir
+
         if self.source_folder_path:
             self.info_text  = False
             self.info2_text = True
@@ -130,6 +135,7 @@ class Window(QMainWindow):
         
         if self.mode == "brightness":
             imagelist = self.pil_imagelist_brightness
+            # print(len(imagelist))
         if self.mode == "saturation":
             imagelist = self.pil_imagelist_saturation
         if self.mode == "contrast":
@@ -171,6 +177,7 @@ class Window(QMainWindow):
             pixmap_item.setPos(col*(pm_width_new+10),row * (pm_height_new + 10))
             # pixmap_item.setFlag(QGraphicsItem.ItemIsMovable)
             self.gv_preview.setScene(self.scene)
+            # print(col)
             col += 1
             
 
@@ -359,8 +366,11 @@ class Window(QMainWindow):
 
     def resizeEvent(self, event):       
         
-        self.show_pil_imagelist_in_gv()
-        self.show_pil_imagelist_rotation_in_gv()
+        if self.mode == "rotation":
+            self.show_pil_imagelist_rotation_in_gv()
+        else:
+            self.show_pil_imagelist_in_gv()
+        
         
         if self.info_text == True:
             self.print_info_text_in_gv()
