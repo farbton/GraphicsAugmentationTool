@@ -18,7 +18,7 @@ class Contrast(QtCore.QObject):
     def preview_contrast_oneImage(self):
         pil_imagelist_contrast = []
         steps = int(self.le_steps.text())
-        factor = round((2 / steps), 1)
+        factor = round((2 / steps), 2)
         value  = factor
         current_index = self.lw_sourcefolder.currentRow()
         # print(self.lw_sourcefolder)
@@ -33,7 +33,7 @@ class Contrast(QtCore.QObject):
             pil_imagelist_contrast.append([img_cont,
                                            item_name.text(),
                                            value])
-            value = round(value + factor, 1)
+            value = round(value + factor, 2)
             
         return pil_imagelist_contrast
             
@@ -46,7 +46,7 @@ class Contrast(QtCore.QObject):
         pil_imagelist_contrast_allImages = []
         for index in range(len(self.lw_sourcefolder)):
             steps = int(self.le_steps.text())
-            factor = round((2 / steps), 1)
+            factor = round((2 / steps), 2)
             value  = factor
             # print(factor)
             item_name = self.lw_sourcefolder.item(index)
@@ -58,7 +58,7 @@ class Contrast(QtCore.QObject):
                 pil_imagelist_contrast_allImages.append([img_cont,
                                                          item_name.text(),
                                                          value])
-                value = round(value + factor, 1)
+                value = round(value + factor, 2)
                 
         return pil_imagelist_contrast_allImages
     

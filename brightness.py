@@ -20,7 +20,7 @@ class Brightness(QtCore.QObject):
     def preview_brightness_oneImage(self):
         pil_imagelist_brightness = []
         steps = int(self.le_steps.text())
-        factor = round((2 / steps), 1)
+        factor = round((2 / steps), 2)
         value  = factor
         current_index = self.lw_sourcefolder.currentRow()
         # print(self.lw_sourcefolder)
@@ -35,7 +35,7 @@ class Brightness(QtCore.QObject):
             pil_imagelist_brightness.append([img_bright,
                                              item_name.text(),
                                              value])
-            value = round(value + factor, 1)
+            value = round(value + factor, 2)
             
         return pil_imagelist_brightness
             
@@ -49,7 +49,7 @@ class Brightness(QtCore.QObject):
         pil_imagelist_bright_allImages = []
         for index in range(len(self.lw_sourcefolder)):
             steps = int(self.le_steps.text())
-            factor = round((2 / steps), 1)
+            factor = round((2 / steps), 2)
             value  = factor
             # print(factor)
             item_name = self.lw_sourcefolder.item(index)
@@ -61,7 +61,7 @@ class Brightness(QtCore.QObject):
                 pil_imagelist_bright_allImages.append([img_bright,
                                                        item_name.text(),
                                                        value])
-                value = round(value + factor, 1)
+                value = round(value + factor, 2)
                 
         return pil_imagelist_bright_allImages
     

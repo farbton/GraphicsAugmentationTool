@@ -20,7 +20,7 @@ class Saturation(QtCore.QObject):
     def preview_saturation_oneImage(self):
         pil_imagelist_saturation = []
         steps = int(self.le_steps.text())
-        factor = round((2 / steps), 1)
+        factor = round((2 / steps), 2)
         value  = factor
         current_index = self.lw_sourcefolder.currentRow()
         item_name = self.lw_sourcefolder.item(current_index)
@@ -32,7 +32,7 @@ class Saturation(QtCore.QObject):
             pil_imagelist_saturation.append([img_sat,
                                              item_name.text(),
                                              value])
-            value = round(value + factor, 1)
+            value = round(value + factor, 2)
 
         return pil_imagelist_saturation
         
@@ -46,7 +46,7 @@ class Saturation(QtCore.QObject):
         pil_imagelist_saturation_allImages = []
         for index in range(len(self.lw_sourcefolder)):
             steps = int(self.le_steps.text())
-            factor = round((2 / steps), 1)
+            factor = round((2 / steps), 2)
             value  = factor
             # print(factor)
             item_name = self.lw_sourcefolder.item(index)
@@ -58,7 +58,7 @@ class Saturation(QtCore.QObject):
                 pil_imagelist_saturation_allImages.append([img_sat,
                                                            item_name.text(),
                                                            value])
-                value = round(value + factor, 1)
+                value = round(value + factor, 2)
                 
         return pil_imagelist_saturation_allImages
     

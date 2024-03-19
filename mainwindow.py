@@ -8,7 +8,7 @@ from PyQt5 import QtCore, uic
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QFileDialog, QGraphicsPixmapItem, QGridLayout, QLabel, QGraphicsItem, QGraphicsTextItem
 from PyQt5.QtGui import QPixmap, QPen, QFont, QImage
 from PIL import Image, ImageEnhance , ImageQt
-import reader, writer, brightness, saturation, contrast, sharpness, rotation
+import reader, writer, brightness, saturation, contrast, sharpness, rotation, flip
 import os, numpy as np
 
 
@@ -36,6 +36,7 @@ class Window(QMainWindow):
         self.txt_list = []
         self.pil_imagelist_brightness = []
         self.pil_imagelist_brightness_allImages = []
+        self.pil_imagelist_flip = []
         self.mode = None
         self.init_source_path()
         self.print_destinationfolder_path()
@@ -67,8 +68,9 @@ class Window(QMainWindow):
         self.pb_destinationfolder.clicked.connect(self.open_destinationfolder)
         self.pb_saturation.clicked.connect(self.saturation)
         self.pb_contrast.clicked.connect(self.contrast)
-        self.pb_blur.clicked.connect(self.sharpness)
+        self.pb_sharpness.clicked.connect(self.sharpness)
         self.pb_rotation.clicked.connect(self.rotation)
+        self.pb_flip.clicked.connect(self.flip)
      
     def init_source_path(self):
         self.source_folder_path = os.getcwd() + "/" + self.source_folder_path
@@ -142,10 +144,12 @@ class Window(QMainWindow):
             imagelist = self.pil_imagelist_contrast
         if self.mode == "sharpness":
             imagelist = self.pil_imagelist_sharpness
+        if self.mode == "flip":
+            imagelist = self.pil_imagelist_flip
                     
         row = 0
         col = 0
-        # print(imagelist)
+        # print("mainwindow.show_pil...()",imagelist)
         for i, (image, name, value) in enumerate(imagelist):
             # print(image.mode)
             # image.show()
@@ -297,6 +301,18 @@ class Window(QMainWindow):
             self.rotation.preview_rotation_oneImage()
         self.show_pil_imagelist_rotation_in_gv()
         self.determine_finished_images()
+        
+        
+    def flip(self):
+        self.mode = "flip"
+        self.info_text = False
+        self.info2_text = False
+        self.print_mode_in_console()
+        self.flip = flip.Flip(self.lw_sourcefolder, self.source_folder_path)
+        self.pil_imagelist_flip, self.txt_filelist_flip =\
+            self.flip.preview_flip_oneImage()
+        self.show_pil_imagelist_in_gv()
+        self.determine_finished_images()
 
     def print_mode_in_console(self):
         self.lb_console.setText("Mode: " + str(self.mode))
@@ -322,6 +338,12 @@ class Window(QMainWindow):
             self.writer.write_rotated_files_oneImage(
                 self.pil_imagelist_rotation, 
                 self.txt_filelist_rotation,
+                self.mode)
+            
+        if self.mode == "flip":            
+            self.writer.write_fliped_files_oneImage(
+                self.pil_imagelist_flip, 
+                self.txt_filelist_flip,
                 self.mode)
             
                     
@@ -354,6 +376,14 @@ class Window(QMainWindow):
                 (self.pil_imagelist_rotation_allImages,
                  self.txt_filelist_rotation_all,
                  self.mode)
+                
+        if self.mode == "flip":
+            self.pil_imagelist_flip_allImages, self.txt_filelist_flip_all\
+                = self.flip.flip_allImages()
+            self.writer.write_fliped_files_allImages\
+                (self.pil_imagelist_flip_allImages,
+                  self.txt_filelist_flip_all,
+                  self.mode)
     
     def determine_finished_images(self):    
         count_listwidget = len(self.lw_sourcefolder)
@@ -406,6 +436,13 @@ class Window(QMainWindow):
             self.pil_imagelist_rotation, self.txt_filelist_rotation = \
                 self.rotation.preview_rotation_oneImage()
             self.show_pil_imagelist_rotation_in_gv()
+            
+        if self.mode == "flip":
+            self.pil_imagelist_flip, self.txt_filelist_flip = \
+                self.flip.preview_flip_oneImage()
+            # print("mainwindow.preview()_pil:", self.pil_imagelist_flip)
+            # print("mainwindow.preview()_txt:", self.txt_filelist_flip)
+            self.show_pil_imagelist_in_gv()
             
         else:
             self.lb_console.setText("Mode: " + str(self.mode))

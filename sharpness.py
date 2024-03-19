@@ -19,7 +19,7 @@ class Sharpness(QtCore.QObject):
     def preview_sharpness_oneImage(self):
         pil_imagelist_sharpness = []
         steps = int(self.le_steps.text())
-        factor = round((2 / steps), 1)
+        factor = round((2 / steps), 2)
         value  = factor
         current_index = self.lw_sourcefolder.currentRow()
         # print(self.lw_sourcefolder)
@@ -34,7 +34,7 @@ class Sharpness(QtCore.QObject):
             pil_imagelist_sharpness.append([img_sharp,
                                             item_name.text(),
                                             value])
-            value = round(value + factor, 1)
+            value = round(value + factor, 2)
           
         return pil_imagelist_sharpness
             
@@ -47,7 +47,7 @@ class Sharpness(QtCore.QObject):
         pil_imagelist_sharpness_allImages = []
         for index in range(len(self.lw_sourcefolder)):
             steps = int(self.le_steps.text())
-            factor = round((2 / steps), 1)
+            factor = round((2 / steps), 2)
             value  = factor
             # print(factor)
             item_name = self.lw_sourcefolder.item(index)
@@ -59,7 +59,7 @@ class Sharpness(QtCore.QObject):
                 pil_imagelist_sharpness_allImages.append([img_sharp,
                                                           item_name.text(),
                                                           value])
-                value = round(value + factor, 1)
+                value = round(value + factor, 2)
                 
         return pil_imagelist_sharpness_allImages
     

@@ -49,6 +49,7 @@ class Writer():
             img_name_mode_list = pil_imagellist[number]
             bbox_list = txt_list[number]
             image, fullname, angle = img_name_mode_list
+            # print(img_name_mode_list)
             head, tail = os.path.splitext(fullname)
             new_file_name = head + "_" + str(angle) + "_" + str(mode)[0:2] + tail
             new_file_path = self.destination_folder_path + "\\" + new_file_name
@@ -64,7 +65,7 @@ class Writer():
         for number in range(len(pil_imagelist_rotation_allImages)):
             img = pil_imagelist_rotation_allImages[number]
             bbox_list = txt_filelist_rotation_all[number]
-            # print(bbox_list)
+            # print(img)
             self.write_rotated_files_oneImage([img], [bbox_list], mode)
         
         
@@ -79,5 +80,54 @@ class Writer():
         new_file = open(new_file_path, "w")
         new_file.writelines(str(bbox) for bbox in bbox_list)
         new_file.close()
-      
-    
+        
+    def write_fliped_files_oneImage(self, pil_imagellist, txt_list, mode):
+        
+        # print(pil_imagellist)
+        # print(txt_list)
+        for number in range(len(pil_imagellist)):
+            
+            img_name_mode_list = pil_imagellist[number]
+            # print(img_name_mode_list)
+            bbox_list = txt_list[number]
+            image, fullname, string = img_name_mode_list
+            head, tail = os.path.splitext(fullname)
+            new_file_name = head + "_" + string + tail
+            new_file_path = self.destination_folder_path + "\\" + new_file_name
+            image.save(new_file_path)
+            self.write_fliped_bbox_list(bbox_list, fullname, string) 
+            
+    def write_fliped_bbox_list(self, bbox_list, fullname, string):
+        # print("fullnmae: ", fullname)
+        head, tail = os.path.splitext(fullname)
+        # print("tail: " , tail)
+        new_file_name = head + "_" +  string + ".txt"
+        new_file_path = self.destination_folder_path + "\\" + new_file_name
+        new_file = open(new_file_path, "w")
+        new_file.writelines(str(bbox) for bbox in bbox_list)
+        new_file.close()
+        
+    def write_fliped_files_allImages(self, pil_imagelist_flip_allImages,
+                                      txt_filelist_flip_all,
+                                      mode):
+        
+        # print(len(pil_imagelist_rotation_allImages))
+        # print(len(txt_filelist_rotation_all))
+        for number in range(len(pil_imagelist_flip_allImages)):
+            img = pil_imagelist_flip_allImages[number]
+            bbox_list = txt_filelist_flip_all[number]
+            # print(img)
+            # print(bbox_list)
+            # print(mode)
+            
+            self.write_fliped_files_oneImage([img], [bbox_list], mode)
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
