@@ -40,6 +40,7 @@ class Window(QMainWindow):
         self.mode = None
         self.init_source_path()
         self.print_destinationfolder_path()
+        self.show_filenames_in_listwidget_destinationfolder()
         
     def print_info_text_in_gv(self):
         self.scene.addText("Drücken Sie den Button <Sourcefolder> um das Quellverzeichnis auszuwählen \n \
@@ -125,6 +126,17 @@ class Window(QMainWindow):
                 self.txt_list.append(name)
         self.lw_sourcefolder.setCurrentRow(0)
         self.determine_finished_images()
+        
+    def show_filenames_in_listwidget_destinationfolder(self):
+        # self.destination_folder_path = os.getcwd() + "/" + self.destination_folder_path
+        list_filenames = self.reader.read_sourcefolder(self.destination_folder_path)
+        self.lw_destinationfolder.clear()
+        for name in list_filenames:
+            if name.endswith(('.jpg', '.png')):
+                self.lw_destinationfolder.addItem(str(name))
+            
+        # self.lw_sourcefolder.setCurrentRow(0)
+        # self.determine_finished_images()
            
     def get_gv_height_and_width(self):
         return  self.gv_preview.width(), self.gv_preview.height()
@@ -250,6 +262,7 @@ class Window(QMainWindow):
         self.show_pil_imagelist_in_gv()
         self.determine_finished_images()
         
+        
     def saturation(self):
         self.mode = "saturation"
         self.info_text = False
@@ -262,6 +275,7 @@ class Window(QMainWindow):
         self.pil_imagelist_saturation = self.saturation.preview_saturation_oneImage()
         self.show_pil_imagelist_in_gv()
         self.determine_finished_images()
+        
 
     def contrast(self):
         self.mode = "contrast"
@@ -275,6 +289,7 @@ class Window(QMainWindow):
         self.pil_imagelist_contrast = self.contrast.preview_contrast_oneImage()
         self.show_pil_imagelist_in_gv()
         self.determine_finished_images()
+        
 
     def sharpness(self):
         self.mode = "sharpness"
@@ -288,6 +303,7 @@ class Window(QMainWindow):
         self.pil_imagelist_sharpness = self.sharpness.preview_sharpness_oneImage()
         self.show_pil_imagelist_in_gv()
         self.determine_finished_images()
+        
         
     def rotation(self):
         self.mode = "rotation"
@@ -303,6 +319,7 @@ class Window(QMainWindow):
         self.determine_finished_images()
         
         
+        
     def flip(self):
         self.mode = "flip"
         self.info_text = False
@@ -313,6 +330,7 @@ class Window(QMainWindow):
             self.flip.preview_flip_oneImage()
         self.show_pil_imagelist_in_gv()
         self.determine_finished_images()
+        
 
     def print_mode_in_console(self):
         self.lb_console.setText("Mode: " + str(self.mode))
@@ -346,6 +364,7 @@ class Window(QMainWindow):
                 self.txt_filelist_flip,
                 self.mode)
             
+        self.show_filenames_in_listwidget_destinationfolder()    
                     
     def save_all_files(self):
         if self.mode == "brightness":
@@ -384,6 +403,8 @@ class Window(QMainWindow):
                 (self.pil_imagelist_flip_allImages,
                   self.txt_filelist_flip_all,
                   self.mode)
+                
+        self.show_filenames_in_listwidget_destinationfolder()
     
     def determine_finished_images(self):    
         count_listwidget = len(self.lw_sourcefolder)

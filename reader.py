@@ -21,5 +21,6 @@ class Reader(QtCore.QObject):
     
     def get_list_of_filenames(self, path):
         self.list_filenames = []
+        # print("path: ",  path)
         for filename in os.listdir(path):
             self.list_filenames.append(filename)
