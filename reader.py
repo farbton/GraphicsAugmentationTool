@@ -2,7 +2,7 @@
 """
 Created on Wed Nov 30 10:28:43 2022
 
-@author: Admin
+@author: Kirko
 """
 import os
 from PyQt5 import QtCore

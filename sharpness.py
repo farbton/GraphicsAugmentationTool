@@ -22,12 +22,8 @@ class Sharpness(QtCore.QObject):
         factor = round((2 / steps), 2)
         value  = factor
         current_index = self.lw_sourcefolder.currentRow()
-        # print(self.lw_sourcefolder)
-        # for item in range(0, self.lw_sourcefolder.count()):
-        # self.lb_console.setText(str(current_index))
         item_name = self.lw_sourcefolder.item(current_index)
-        item_path = self.source_folder_path + "/" + item_name.text()
-        # print(item_path)
+        item_path = os.path.join(self.source_folder_path, item_name.text())
         pil_image = Image.open(item_path)
         for j in range(steps):
             img_sharp = self.change_sharpness_oneImage(pil_image, value)
@@ -43,25 +39,31 @@ class Sharpness(QtCore.QObject):
         img_sharp = img_ies.enhance(factor)
         return img_sharp
     
-    def change_sharpness_allImages(self):
+    def change_sharpness_allImages(self, txt_list, mode, writer):
         pil_imagelist_sharpness_allImages = []
         for index in range(len(self.lw_sourcefolder)):
             steps = int(self.le_steps.text())
             factor = round((2 / steps), 2)
             value  = factor
-            # print(factor)
             item_name = self.lw_sourcefolder.item(index)
-            item_path = self.source_folder_path + "/" + item_name.text()
-            pil_image = Image.open(item_path)
+            item_path = os.path.join(self.source_folder_path, item_name.text())
+            
+            with Image.open(item_path, mode='r') as pil_image:
 
-            for j in range(steps):
-                img_sharp = self.change_sharpness_oneImage(pil_image, value)
-                pil_imagelist_sharpness_allImages.append([img_sharp,
-                                                          item_name.text(),
-                                                          value])
-                value = round(value + factor, 2)
-                
-        return pil_imagelist_sharpness_allImages
+                for j in range(steps):
+                    img_sharp = self.change_sharpness_oneImage(pil_image, value)
+                    pil_imagelist_sharpness_allImages.append([img_sharp,
+                                                              item_name.text(),
+                                                              value])
+                    value = round(value + factor, 2)
+                    writer.write_files_to_disk(pil_imagelist_sharpness_allImages,
+                                               txt_list,
+                                               mode)
+                    pil_imagelist_sharpness_allImages.pop()
+    
+    
+    
+    
     
     
     

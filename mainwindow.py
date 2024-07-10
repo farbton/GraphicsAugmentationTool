@@ -5,12 +5,16 @@ Created on Sat Nov 26 20:23:50 2022
 @author: Kirko
 """
 from PyQt5 import QtCore, uic
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QFileDialog, QGraphicsPixmapItem, QGridLayout, QLabel, QGraphicsItem, QGraphicsTextItem
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QFileDialog,\
+    QGraphicsPixmapItem, QGridLayout, QLabel, QGraphicsItem, QGraphicsTextItem
 from PyQt5.QtGui import QPixmap, QPen, QFont, QImage
-from PIL import Image, ImageEnhance , ImageQt
-import reader, writer, brightness, saturation, contrast, sharpness, rotation, flip
+from PIL import Image, ImageEnhance , ImageQt, ImageShow
+import reader, writer, brightness, saturation, contrast, sharpness,\
+    rotation, flip, translation, scale
 import os, numpy as np
-
+import time
+import io
+testwert = 0
 
 class Window(QMainWindow):
     
@@ -37,6 +41,7 @@ class Window(QMainWindow):
         self.pil_imagelist_brightness = []
         self.pil_imagelist_brightness_allImages = []
         self.pil_imagelist_flip = []
+        self.pil_imagelist_translation = []
         self.mode = None
         self.init_source_path()
         self.print_destinationfolder_path()
@@ -71,7 +76,10 @@ class Window(QMainWindow):
         self.pb_contrast.clicked.connect(self.contrast)
         self.pb_sharpness.clicked.connect(self.sharpness)
         self.pb_rotation.clicked.connect(self.rotation)
+        self.pb_translation.clicked.connect(self.translation)
         self.pb_flip.clicked.connect(self.flip)
+        self.pb_noise.clicked.connect(self.noise)
+        self.pb_scale.clicked.connect(self.scale)
      
     def init_source_path(self):
         self.source_folder_path = os.getcwd() + "/" + self.source_folder_path
@@ -158,11 +166,16 @@ class Window(QMainWindow):
             imagelist = self.pil_imagelist_sharpness
         if self.mode == "flip":
             imagelist = self.pil_imagelist_flip
-                    
+        if self.mode == "translation":
+            imagelist = self.pil_imagelist_translation
+        if self.mode == "scale":
+            imagelist = self.pil_imagelist_scale
+            
+            
         row = 0
         col = 0
         # print("mainwindow.show_pil...()",imagelist)
-        for i, (image, name, value) in enumerate(imagelist):
+        for i, (image, ___ , ___) in enumerate(imagelist):
             # print(image.mode)
             # image.show()
             if image.mode == "RGB":
@@ -171,10 +184,7 @@ class Window(QMainWindow):
                 imageformat = QImage.Format_RGBA8888
             if image.mode == "L":
                 imageformat = QImage.Format_Grayscale8
-                
-                
-            
-            
+          
             if (i % 5  == 0) and (i > 0):
                 row += 1
                 col  = 0
@@ -196,19 +206,26 @@ class Window(QMainWindow):
             # print(col)
             col += 1
             
-
     def show_pil_imagelist_rotation_in_gv(self):
         self.scene.clear()
         gv_width, gv_height = self.get_gv_height_and_width()
-        # print(gv_width)
         imagelist = [] 
         imagelist = self.pil_imagelist_rotation
         row = 0
         col = 0
+        # print("gv_width:" , gv_width, "gv_height: ", gv_height) 
         
-        for i, (image, name, angle) in enumerate(imagelist):
+        # pm_width_new  = 300
+        # pm_height_new = 300
+        
+        pics_per_row = gv_width // 300
+        
+        
+        
+        for i, (image, ___, ___) in enumerate(imagelist):
             
             aspect_ratio = image.width / image.height
+            # print("aspect_ratio: ", aspect_ratio)
             
             if image.mode == "RGB":
                 imageformat = QImage.Format_RGB888
@@ -217,36 +234,32 @@ class Window(QMainWindow):
             if image.mode == "L":
                 imageformat = QImage.Format_Grayscale8
                 
-            if (i % 3  == 0) and (i > 0) :
+            if (i % pics_per_row  == 0) and (i > 0) :
                 row += 1
                 col  = 0
+                
+               
+            pm_width_new = int((gv_width - 70)//5)  # 70 = offset Zwischenraum zwischen den Bildern
+            # print("pm_width_new: ", pm_width_new)
+            images_per_col = gv_height / (pm_width_new / aspect_ratio)
+            pm_height_new = int(gv_height / images_per_col)            
+            image = image.convert("RGBA")            
+            qimage = QImage(image.tobytes("raw", "BGRA"),
+                            image.width,
+                            image.height,
+                            QImage.Format_ARGB32)
+     
+            pixmap = QPixmap.fromImage(qimage)  
             
-            if angle==90 or angle==270:
-                pm_width_new = int((gv_width - 40)//3)  # 70 = offset Zwischenraum zwischen den Bildern
-                images_per_col = gv_height / (pm_width_new / (1/aspect_ratio))
-                pm_height_new = int(gv_height / images_per_col)
+            if pm_width_new <= pm_height_new:
+                pixmap_item = self.scene.addPixmap(pixmap.scaled(int(300 * aspect_ratio), 300))
+            else:     
+                pixmap_item = self.scene.addPixmap(pixmap.scaled(300, int(300 / aspect_ratio)))
                 
-                qimage = QImage(image.tobytes(),image.width, image.height, imageformat)
-
-                pixmap = QPixmap.fromImage(qimage)
-                pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_height_new, pm_width_new))
-                pixmap_item.setPos(col*(pm_width_new+10),row * (pm_height_new + 10))
-                self.gv_preview.setScene(self.scene)
-                col += 1
-            else:
-                pm_width_new = int((gv_width - 40)//3)  # 70 = offset Zwischenraum zwischen den Bildern
-                images_per_col = gv_height / (pm_width_new / aspect_ratio)
-                pm_height_new = int(gv_height / images_per_col)
-                
-                qimage = QImage(image.tobytes(),image.width, image.height, imageformat)
-
-                pixmap = QPixmap.fromImage(qimage)
-                pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_width_new, pm_height_new))
-                # pixmap_item.setPos(col*(pm_width_new-(pm_height_new / 2)+10),row * (pm_height_new + 10))
-                pixmap_item.setPos(col*(pm_height_new+10),row * (pm_width_new + 10))
-                self.gv_preview.setScene(self.scene)
-                col += 1
-                
+            
+            pixmap_item.setPos(col*(300 + 10),row * (300 + 10))
+            self.gv_preview.setScene(self.scene)
+            col += 1                               
 
     def brightness(self):
         # print("funktion: brightness")
@@ -311,11 +324,26 @@ class Window(QMainWindow):
         self.info2_text = False
         self.print_mode_in_console()
         self.rotation = rotation.Rotation(self.lw_sourcefolder,
-                                          self.source_folder_path)
+                                          self.source_folder_path,
+                                          self.le_steps)
         
         self.pil_imagelist_rotation, self.txt_filelist_rotation = \
             self.rotation.preview_rotation_oneImage()
         self.show_pil_imagelist_rotation_in_gv()
+        self.determine_finished_images()
+        
+    def translation(self):
+        self.mode = "translation"
+        self.info_text = False
+        self.info2_text = False
+        self.print_mode_in_console()
+        self.translation = translation.Translation(self.lw_sourcefolder,
+                                                   self.source_folder_path,
+                                                   self.le_steps)
+        
+        self.pil_imagelist_translation, self.txt_filelist_translation =\
+            self.translation.preview_translation_oneImage()        
+        self.show_pil_imagelist_in_gv()
         self.determine_finished_images()
         
         
@@ -331,6 +359,25 @@ class Window(QMainWindow):
         self.show_pil_imagelist_in_gv()
         self.determine_finished_images()
         
+    def noise(self):
+        self.mode = "noise"
+        self.info_text = False
+        self.info2_text = False
+        self.print_mode_in_console()   
+        
+        
+    def scale(self):
+        self.mode = "scale"
+        self.info_text = False
+        self.info2_text = False
+        self.print_mode_in_console()
+        self.scale = scale.Scale(self.lw_sourcefolder, 
+                                 self.source_folder_path,
+                                 self.le_steps)
+        self.pil_imagelist_scale, self.txt_filelist_scale =\
+            self.scale.preview_scale_oneImage()
+        self.show_pil_imagelist_in_gv()
+        self.determine_finished_images()
 
     def print_mode_in_console(self):
         self.lb_console.setText("Mode: " + str(self.mode))
@@ -358,51 +405,61 @@ class Window(QMainWindow):
                 self.txt_filelist_rotation,
                 self.mode)
             
+        if self.mode == "translation":            
+            self.writer.write_translated_file_oneImage(
+                self.pil_imagelist_translation,
+                self.txt_filelist_translation,
+                self.mode)
+            
         if self.mode == "flip":            
             self.writer.write_fliped_files_oneImage(
                 self.pil_imagelist_flip, 
                 self.txt_filelist_flip,
                 self.mode)
             
+        if self.mode == "scale":
+            self.writer.write_scaled_files_oneImage(self.pil_imagelist_scale,
+                                                    self.txt_filelist_scale,
+                                                    self.mode)
+            
+            
         self.show_filenames_in_listwidget_destinationfolder()    
                     
     def save_all_files(self):
         if self.mode == "brightness":
-            self.pil_imagelist_brightness_allImages = self.brightness.change_brightness_allImages()
-            self.writer.write_files_to_disk(self.pil_imagelist_brightness_allImages,
-                                            self.txt_list,
-                                            self.mode)
-        if self.mode == "saturation":
-            self.pil_imagelist_saturation_allImages = self.saturation.change_saturation_allImages()
-            self.writer.write_files_to_disk(self.pil_imagelist_saturation_allImages,
-                                            self.txt_list,
-                                            self.mode)   
-        if self.mode == "contrast":
-            self.pil_imagelist_contrast_allImages = self.contrast.change_contrast_allImages()
-            self.writer.write_files_to_disk(self.pil_imagelist_contrast_allImages,
-                                            self.txt_list,
-                                            self.mode)
-        if self.mode == "sharpness":
-            self.pil_imagelist_sharpness_allImages = self.sharpness.change_sharpness_allImages()
-            self.writer.write_files_to_disk(self.pil_imagelist_sharpness_allImages,
-                                            self.txt_list,
-                                            self.mode)
+            self.brightness.change_brightness_allImages(self.txt_list, 
+                                                        self.mode, 
+                                                        self.writer)
             
+        if self.mode == "saturation":
+            self.saturation.change_saturation_allImages(self.txt_list, 
+                                                        self.mode, 
+                                                        self.writer)
+              
+        if self.mode == "contrast":
+            self.contrast.change_contrast_allImages(self.txt_list, 
+                                                    self.mode, 
+                                                    self.writer)
+            
+        if self.mode == "sharpness":
+            self.sharpness.change_sharpness_allImages(self.txt_list, 
+                                                      self.mode, 
+                                                      self.writer)
+                        
         if self.mode == "rotation":
-            self.pil_imagelist_rotation_allImages, self.txt_filelist_rotation_all\
-                = self.rotation.change_rotation_allImages()
-            self.writer.write_rotated_files_allImages\
-                (self.pil_imagelist_rotation_allImages,
-                 self.txt_filelist_rotation_all,
-                 self.mode)
+            self.rotation.change_rotation_allImages(self.txt_list, 
+                                                    self.mode, 
+                                                    self.writer)
                 
         if self.mode == "flip":
-            self.pil_imagelist_flip_allImages, self.txt_filelist_flip_all\
-                = self.flip.flip_allImages()
-            self.writer.write_fliped_files_allImages\
-                (self.pil_imagelist_flip_allImages,
-                  self.txt_filelist_flip_all,
-                  self.mode)
+            self.flip.flip_allImages(self.txt_list, 
+                                     self.mode, 
+                                     self.writer)     
+            
+        if self.mode == "translation":
+            self.translation.change_translation_allImages(self.txt_list, 
+                                                          self.mode, 
+                                                          self.writer)
                 
         self.show_filenames_in_listwidget_destinationfolder()
     
@@ -411,9 +468,9 @@ class Window(QMainWindow):
         summe = count_listwidget * int(self.le_steps.text())
         self.lb_sum_of_images_2.setText(str(summe))
 
-    def mousePressEvent(self, event):
-        pos = event.localPos()
-        # print("event.pos(): " , pos)
+    # def mousePressEvent(self, event):
+    #     pos = event.localPos()
+    #     # print("event.pos(): " , pos)
 
     def resizeEvent(self, event):       
         
@@ -421,13 +478,14 @@ class Window(QMainWindow):
             self.show_pil_imagelist_rotation_in_gv()
         else:
             self.show_pil_imagelist_in_gv()
-        
-        
+             
         if self.info_text == True:
             self.print_info_text_in_gv()
             
         if self.info2_text == True:
             self.print_info2_text_in_gv()
+            
+        self.show_filenames_in_listwidget_destinationfolder()
             
         
     def preview_item(self):

@@ -6,5 +6,5 @@ lakritz_konfekt
 lakritz_geschichtet
 laktitzstange_umhuellt
 gummibaer
-himmbeere
+himbeere
 fledermaus

@@ -24,9 +24,8 @@ class Saturation(QtCore.QObject):
         value  = factor
         current_index = self.lw_sourcefolder.currentRow()
         item_name = self.lw_sourcefolder.item(current_index)
-        item_path = self.source_folder_path + "/" + item_name.text()
-        pil_image = Image.open(item_path)
-        # print("test")
+        item_path = os.path.join(self.source_folder_path, item_name.text())
+        pil_image = Image.open(item_path, mode='r')
         for j in range(steps):
             img_sat = self.change_saturation_oneImage(pil_image, value)
             pil_imagelist_saturation.append([img_sat,
@@ -42,25 +41,28 @@ class Saturation(QtCore.QObject):
          img_sat    = img_iec.enhance(value)
          return img_sat
      
-    def change_saturation_allImages(self):
+    def change_saturation_allImages(self, txt_list, mode, writer):
         pil_imagelist_saturation_allImages = []
         for index in range(len(self.lw_sourcefolder)):
             steps = int(self.le_steps.text())
             factor = round((2 / steps), 2)
             value  = factor
-            # print(factor)
             item_name = self.lw_sourcefolder.item(index)
-            item_path = self.source_folder_path + "/" + item_name.text()
-            pil_image = Image.open(item_path)
+            item_path = os.path.join(self.source_folder_path, item_name.text())
+            
+            with Image.open(item_path, mode='r') as pil_image:
 
-            for j in range(steps):
-                img_sat = self.change_saturation_oneImage(pil_image, value)
-                pil_imagelist_saturation_allImages.append([img_sat,
-                                                           item_name.text(),
-                                                           value])
-                value = round(value + factor, 2)
-                
-        return pil_imagelist_saturation_allImages
+                for j in range(steps):
+                    img_sat = self.change_saturation_oneImage(pil_image, value)
+                    pil_imagelist_saturation_allImages.append([img_sat,
+                                                               item_name.text(),
+                                                               value])
+                    value = round(value + factor, 2)
+                    writer.write_files_to_disk(pil_imagelist_saturation_allImages,
+                                               txt_list,
+                                               mode)
+                    pil_imagelist_saturation_allImages.pop()
+
     
     
     

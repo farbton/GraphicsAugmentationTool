@@ -2,7 +2,7 @@
 """
 Created on Fri Jan  6 10:40:41 2023
 
-@author: Admin
+@author: Kirko
 """
 import os
 from PyQt5 import QtCore
@@ -21,12 +21,8 @@ class Contrast(QtCore.QObject):
         factor = round((2 / steps), 2)
         value  = factor
         current_index = self.lw_sourcefolder.currentRow()
-        # print(self.lw_sourcefolder)
-        # for item in range(0, self.lw_sourcefolder.count()):
-        # self.lb_console.setText(str(current_index))
         item_name = self.lw_sourcefolder.item(current_index)
-        item_path = self.source_folder_path + "/" + item_name.text()
-        # print(item_path)
+        item_path = os.path.join(self.source_folder_path, item_name.text())
         pil_image = Image.open(item_path)
         for j in range(steps):
             img_cont = self.change_contrast_oneImage(pil_image, value)
@@ -42,25 +38,27 @@ class Contrast(QtCore.QObject):
         img_cont = img_iec.enhance(factor)
         return img_cont
     
-    def change_contrast_allImages(self):
+    def change_contrast_allImages(self, txt_list, mode, writer):
         pil_imagelist_contrast_allImages = []
         for index in range(len(self.lw_sourcefolder)):
             steps = int(self.le_steps.text())
             factor = round((2 / steps), 2)
             value  = factor
-            # print(factor)
             item_name = self.lw_sourcefolder.item(index)
-            item_path = self.source_folder_path + "/" + item_name.text()
-            pil_image = Image.open(item_path)
+            item_path = os.path.join(self.source_folder_path, item_name.text())
+           
+            with Image.open(item_path, mode='r') as pil_image:
 
-            for j in range(steps):
-                img_cont = self.change_contrast_oneImage(pil_image, value)
-                pil_imagelist_contrast_allImages.append([img_cont,
-                                                         item_name.text(),
-                                                         value])
-                value = round(value + factor, 2)
-                
-        return pil_imagelist_contrast_allImages
+                for j in range(steps):
+                    img_cont = self.change_contrast_oneImage(pil_image, value)
+                    pil_imagelist_contrast_allImages.append([img_cont,
+                                                             item_name.text(),
+                                                             value])
+                    value = round(value + factor, 2)
+                    writer.write_files_to_disk(pil_imagelist_contrast_allImages,
+                                               txt_list,
+                                               mode)
+                    pil_imagelist_contrast_allImages.pop()
     
     
     
