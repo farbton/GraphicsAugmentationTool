@@ -28,7 +28,8 @@ class Contrast(QtCore.QObject):
             img_cont = self.change_contrast_oneImage(pil_image, value)
             pil_imagelist_contrast.append([img_cont,
                                            item_name.text(),
-                                           value])
+                                           value,
+                                           None]) # None = Placeholder for Counter
             value = round(value + factor, 2)
             
         return pil_imagelist_contrast
@@ -53,7 +54,8 @@ class Contrast(QtCore.QObject):
                     img_cont = self.change_contrast_oneImage(pil_image, value)
                     pil_imagelist_contrast_allImages.append([img_cont,
                                                              item_name.text(),
-                                                             value])
+                                                             value,
+                                                             None]) # None = Placeholder for Counter
                     value = round(value + factor, 2)
                     writer.write_files_to_disk(pil_imagelist_contrast_allImages,
                                                txt_list,

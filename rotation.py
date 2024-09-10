@@ -40,7 +40,9 @@ class Rotation(QtCore.QObject):
             
             pil_imagelist_rotation.append([img_rot,
                                            item_name.text(),
-                                           degrees])
+                                           degrees,
+                                           None]) # None = Placeholder for Counter
+            
             txt_filelist_rotation.append(txt_rot)
             degrees += degrees_steps 
             
@@ -72,7 +74,9 @@ class Rotation(QtCore.QObject):
                     txt_rot = self.change_txt(head, degrees, pil_image.size, img_rot.size)
                     pil_imagelist_rotation_allImages.append([img_rot,
                                                               item_name.text(),
-                                                              degrees])
+                                                              degrees,
+                                                              None]) # None = Placeholder for Counter
+                    
                     txt_filelist_rotation_all.append(txt_rot)
                     degrees += degrees_steps
                     counter += 1

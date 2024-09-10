@@ -29,7 +29,8 @@ class Sharpness(QtCore.QObject):
             img_sharp = self.change_sharpness_oneImage(pil_image, value)
             pil_imagelist_sharpness.append([img_sharp,
                                             item_name.text(),
-                                            value])
+                                            value, 
+                                            None]) # None = Placeholder for Counter
             value = round(value + factor, 2)
           
         return pil_imagelist_sharpness
@@ -54,7 +55,8 @@ class Sharpness(QtCore.QObject):
                     img_sharp = self.change_sharpness_oneImage(pil_image, value)
                     pil_imagelist_sharpness_allImages.append([img_sharp,
                                                               item_name.text(),
-                                                              value])
+                                                              value,
+                                                              None]) # None = Placeholder for Counter
                     value = round(value + factor, 2)
                     writer.write_files_to_disk(pil_imagelist_sharpness_allImages,
                                                txt_list,

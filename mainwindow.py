@@ -7,10 +7,10 @@ Created on Sat Nov 26 20:23:50 2022
 from PyQt5 import QtCore, uic
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QFileDialog,\
     QGraphicsPixmapItem, QGridLayout, QLabel, QGraphicsItem, QGraphicsTextItem
-from PyQt5.QtGui import QPixmap, QPen, QFont, QImage
+from PyQt5.QtGui import QPixmap, QPen, QFont, QImage, QColor
 from PIL import Image, ImageEnhance , ImageQt, ImageShow
-import reader, writer, brightness, saturation, contrast, sharpness,\
-    rotation, flip, translation, scale
+import reader, writer, brightness, saturation, contrast, sharpness, \
+    rotation, flip, translation, scale, noise
 import os, numpy as np
 import time
 import io
@@ -46,22 +46,23 @@ class Window(QMainWindow):
         self.init_source_path()
         self.print_destinationfolder_path()
         self.show_filenames_in_listwidget_destinationfolder()
+        self.comboBox_noise.addItems(["gaussian","localvar","poisson", "s&p", "speckle"])
         
     def print_info_text_in_gv(self):
-        self.scene.addText("Drücken Sie den Button <Sourcefolder> um das Quellverzeichnis auszuwählen \n \
-                            oder drücken Sie einen Button zur Bildmanipulation",
-                            font=QFont("Times", 14))
-        # size = self.gv_preview.size()
-        # print(size.height())
-        
-        # text_item = QGraphicsTextItem("HHHHHHHHHHHHHHH")
-        # self.scene.addItem(text_item)
+        text_item = QGraphicsTextItem()
+        text_item.setHtml("<html> <body> <h1 style=color:red;> \
+            Press the &lt;Source&gt; button to select the source folder or <br>\
+            press a button to manipulate the image in the default sourcefolder. <br> \
+            You can edit .jpg and .png files. <br> \
+            In mode translation, Steps/Degr are the number of shifted pixels \
+            </h1></body></html>")
+        self.scene.addItem(text_item)
         self.gv_preview.setScene(self.scene)
-        # self.gv_preview.centerOn(text_item)
         
     def print_info2_text_in_gv(self):
         self.scene.clear()
-        self.scene.addText("Wählen Sie jetzt ein Button für die Bildmanipulation aus", 
+        self.scene.addText("Wählen Sie jetzt ein Button für die \
+                           Bildmanipulation aus", 
                            font=QFont("Times", 14))
         self.gv_preview.setScene(self.scene)
         
@@ -170,12 +171,14 @@ class Window(QMainWindow):
             imagelist = self.pil_imagelist_translation
         if self.mode == "scale":
             imagelist = self.pil_imagelist_scale
+        if self.mode == "noise":
+            imagelist = self.pil_imagelist_noise
             
             
         row = 0
         col = 0
         # print("mainwindow.show_pil...()",imagelist)
-        for i, (image, ___ , ___) in enumerate(imagelist):
+        for i, (image, name, value, counter) in enumerate(imagelist):
             # print(image.mode)
             # image.show()
             if image.mode == "RGB":
@@ -222,7 +225,7 @@ class Window(QMainWindow):
         
         
         
-        for i, (image, ___, ___) in enumerate(imagelist):
+        for i, (image, ___, ___, ___) in enumerate(imagelist):
             
             aspect_ratio = image.width / image.height
             # print("aspect_ratio: ", aspect_ratio)
@@ -337,6 +340,7 @@ class Window(QMainWindow):
         self.info_text = False
         self.info2_text = False
         self.print_mode_in_console()
+        time.sleep(0.5)
         self.translation = translation.Translation(self.lw_sourcefolder,
                                                    self.source_folder_path,
                                                    self.le_steps)
@@ -364,7 +368,14 @@ class Window(QMainWindow):
         self.info_text = False
         self.info2_text = False
         self.print_mode_in_console()   
+        self.noise = noise.Noise(self.lw_sourcefolder, 
+                                 self.source_folder_path,
+                                 self.comboBox_noise)
         
+        self.pil_imagelist_noise = self.noise.preview_noise_oneImage()
+        # print(len(self.pil_imagelist_noise))
+        self.show_pil_imagelist_in_gv()
+        self.determine_finished_images()
         
     def scale(self):
         self.mode = "scale"
@@ -380,7 +391,12 @@ class Window(QMainWindow):
         self.determine_finished_images()
 
     def print_mode_in_console(self):
-        self.lb_console.setText("Mode: " + str(self.mode))
+        if self.mode == "translation":
+            txt = "Steps/Degr is the number of shifted pixels"
+            self.lb_console.setText("Mode: " + str(self.mode) +
+                                    "\n" + txt)
+        else:
+            self.lb_console.setText("Mode: " + str(self.mode))
                 
     def save_one_file(self):
         if self.mode == "brightness":
@@ -418,8 +434,14 @@ class Window(QMainWindow):
                 self.mode)
             
         if self.mode == "scale":
+            # print(len(self.pil_imagelist_scale))
             self.writer.write_scaled_files_oneImage(self.pil_imagelist_scale,
                                                     self.txt_filelist_scale,
+                                                    self.mode)
+        if self.mode == "noise":
+            # print(len(self.pil_imagelist_noise))
+            self.writer.write_noised_files_oneImage(self.pil_imagelist_noise,
+                                                    self.txt_list,
                                                     self.mode)
             
             
@@ -460,6 +482,16 @@ class Window(QMainWindow):
             self.translation.change_translation_allImages(self.txt_list, 
                                                           self.mode, 
                                                           self.writer)
+            
+        if self.mode == "scale":
+            self.scale.change_scale_allImages(self.txt_list, 
+                                              self.mode, 
+                                              self.writer)
+            
+        if self.mode == "noise":
+            self.noise.change_noise_allImages(self.txt_list, 
+                                              self.mode, 
+                                              self.writer)
                 
         self.show_filenames_in_listwidget_destinationfolder()
     

@@ -34,7 +34,8 @@ class Brightness(QtCore.QObject):
             img_bright = self.change_brightness_oneImage(pil_image, value)
             pil_imagelist_brightness.append([img_bright,
                                              item_name.text(),
-                                             value])
+                                             value,
+                                             None]) # None = Placeholder for Counter
             value = round(value + factor, 2)
             
         return pil_imagelist_brightness
@@ -59,7 +60,8 @@ class Brightness(QtCore.QObject):
                     img_bright = self.change_brightness_oneImage(pil_image, value)
                     pil_imagelist_brightness_allImages.append([img_bright,
                                                                item_name.text(),
-                                                               value])
+                                                               value,
+                                                               None]) # None = Placeholder for Counter
                     value = round(value + factor, 2)
                     writer.write_files_to_disk(pil_imagelist_brightness_allImages,
                                                txt_list,

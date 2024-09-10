@@ -39,7 +39,8 @@ class Translation(QtCore.QObject):
             
             pil_imagelist_translation.append([img_translate,
                                               item_name.text(),
-                                              offset])   
+                                              offset,
+                                              None]) # None = Placeholder for Counter
              
             txt_filelist_translation.append(txt_translate)
             
@@ -72,7 +73,8 @@ class Translation(QtCore.QObject):
                     
                     pil_imagelist_translation_allImages.append([img_translation,
                                                               item_name.text(),
-                                                              offset])
+                                                              offset,
+                                                              None]) # None = Placeholder for Counter
 
                     txt_filelist_translation_all.append(txt_translation)
                     offset += value

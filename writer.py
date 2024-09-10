@@ -19,7 +19,7 @@ class Writer():
         # print(txtlist)
         # file_ext  = ".jpg"
         # print(self.counter)
-        for (image, fullname, value) in pil_imagelist:
+        for (image, fullname, value, counter) in pil_imagelist:
             head, tail = os.path.splitext(fullname)
             new_file_name = head + "_" + str(value) + "_" + str(mode)[0:2] + tail
             # new_file_path = self.destination_folder_path + "\\" + new_file_name
@@ -54,7 +54,7 @@ class Writer():
             
             img_name_mode_list = pil_imagelist[number]
             bbox_list = txt_list[number]
-            image, fullname, angle = img_name_mode_list
+            image, fullname, angle, ____ = img_name_mode_list
             # print(img_name_mode_list)
             head, tail = os.path.splitext(fullname)
             new_file_name = head + "_" + str(angle) + "_" + str(mode)[0:2] + tail
@@ -96,7 +96,7 @@ class Writer():
             img_name_mode_list = pil_imagellist[number]
             # print(img_name_mode_list)
             bbox_list = txt_list[number]
-            image, fullname, string = img_name_mode_list
+            image, fullname, string, ___ = img_name_mode_list
             head, tail = os.path.splitext(fullname)
             new_file_name = head + "_" + string + tail
             new_file_path = self.destination_folder_path + "\\" + new_file_name
@@ -133,7 +133,7 @@ class Writer():
        
         for number in range(len(pil_imagelist)):
             
-            img, fullname, offset = pil_imagelist[number]
+            img, fullname, offset, ___ = pil_imagelist[number]
             bbox_list = txt_list[number]
 
             head, tail = os.path.splitext(fullname)
@@ -161,17 +161,65 @@ class Writer():
             img = pil_imagelist_translation_allImages[number]
             bbox_list = txt_filelist_translation_all[number]
             self.write_translated_file_oneImage([img], [bbox_list], mode)
+    
             
+    def write_scaled_files_allImages(self, pil_imagelist_scale_allImages,
+                                     txt_filelist_scale_all,
+                                     mode):
+        
+        # print(len(pil_imagelist_rotation_allImages))
+        # print(len(txt_filelist_rotation_all))
+        for number in range(len(pil_imagelist_scale_allImages)):
+            img = pil_imagelist_scale_allImages[number]
+            bbox_list = txt_filelist_scale_all[number]
+            # print(img)
+            self.write_scaled_files_oneImage([img], [bbox_list], mode)
+    
     def write_scaled_files_oneImage(self, 
-                                    pil_imagelist, 
+                                    pil_imagelist_scale, 
                                     txt_filelist_scale, 
                                     mode):
-        
-        for number in range(len(pil_imagelist)):
-            img, fullname, offset = pil_imagelist[number]
-            # bbox_list = txt_filelist_scale[number]
+        # print(len(pil_imagelist_scale))
+        name = "XXX"
+        # counter = 1
+        for number in range(len(pil_imagelist_scale)):
+            # print(number)
+            img, fullname, offset, counter = pil_imagelist_scale[number]
+            # print(fullname)
+            # if name != fullname:
+                # counter = 1
+                # name = fullname
+            # print(number, len(txt_filelist_scale))
+            if number < len(txt_filelist_scale):
+                bbox_list, counter = txt_filelist_scale[number]
+                self.write_scaled_bbox_list(bbox_list, fullname, offset, mode, counter)
             head, tail = os.path.splitext(fullname)
-            new_file_name = head + "_" + str(offset) + "_" + str(mode)[0:2] + tail
+            new_file_name = head + "_" + str(offset) + "_" + \
+                str(mode)[0:2] + "_" + str(int(counter)) + tail
             new_file_path = os.path.join(self.destination_folder_path, new_file_name)
             img.save(new_file_path)
-            # self.write_translated_bbox_list(bbox_list, fullname, offset, mode)
+            # counter += 1
+            
+    
+    def write_scaled_bbox_list(self, bbox_list, fullname, offset, mode, counter):
+
+        head, tail = os.path.splitext(fullname)
+        new_file_name = head + "_" + str(offset) + "_" + str(mode)[0:2] \
+                             + "_" + str(counter) + ".txt"
+        new_file_path = os.path.join(self.destination_folder_path, new_file_name)
+        new_file = open(new_file_path, "w")
+        new_file.writelines(str(bbox) for bbox in bbox_list)
+        new_file.close()   
+        
+    def write_noised_files_oneImage(self, pil_imagelist_noise, txt_list, 
+                                    mode):
+        
+        for number in range(len(pil_imagelist_noise)):
+            img, fullname, noiseType, ____ = pil_imagelist_noise[number]
+            bbox_list = txt_list[number]
+            # print(noiseType)
+            head, tail = os.path.splitext(fullname)
+            new_file_name = head + "_" + str(noiseType) + "_" + str(mode)[0:2] + tail
+            new_file_path = os.path.join(self.destination_folder_path, new_file_name)
+            img.save(new_file_path)
+            self.write_txtfile_to_disk(fullname, noiseType, mode)

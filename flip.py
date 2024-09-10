@@ -28,12 +28,12 @@ class Flip(QtCore.QObject):
         
         img_flip = self.flip_oneImage(pil_image)
         txt_flip = self.change_txt(head, "flip")
-        pil_imagelist_flip.append([img_flip, item_name.text(), "fli"])
+        pil_imagelist_flip.append([img_flip, item_name.text(), "fl", None]) # None = Placeholder for Counter
         txt_filelist_flip.append(txt_flip)
         
         img_mirror = self.mirror_oneImage(pil_image)
         txt_mirror = self.change_txt(head, "mirror")       
-        pil_imagelist_flip.append([img_mirror, item_name.text(), "mir"])
+        pil_imagelist_flip.append([img_mirror, item_name.text(), "mi", None]) # None = Placeholder for Counter
         txt_filelist_flip.append(txt_mirror)
        
         return pil_imagelist_flip, txt_filelist_flip
@@ -103,7 +103,7 @@ class Flip(QtCore.QObject):
         txt_filelist_flip_mirror_allImages  = []
         
         for index in range(len(self.lw_sourcefolder)):
-            print(index)
+            # print(index)
             item_name = self.lw_sourcefolder.item(index)
             item_path = os.path.join(self.source_folder_path, item_name.text())
             head, tail = os.path.splitext(str(item_name.text()))            
@@ -112,14 +112,14 @@ class Flip(QtCore.QObject):
                 img_flip = self.flip_oneImage(pil_image)
                 pil_imagelist_flip_mirror_allImages.append([img_flip,\
                                                             item_name.text(),\
-                                                                "fl"])
+                                                                "fl", None]) # None = Placeholder for Counter
                 txt_flip = self.change_txt(head, "flip")
                 txt_filelist_flip_mirror_allImages.append(txt_flip)
  
                 img_mirror = self.mirror_oneImage(pil_image)
                 pil_imagelist_flip_mirror_allImages.append([img_mirror,\
                                                             item_name.text(),\
-                                                                "mi"])
+                                                                "mi", None]) # None = Placeholder for Counter
                 txt_mirror = self.change_txt(head, "mirror") 
                 txt_filelist_flip_mirror_allImages.append(txt_mirror)
                     
