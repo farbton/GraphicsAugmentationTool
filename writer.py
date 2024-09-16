@@ -32,10 +32,11 @@ class Writer():
     def write_txtfile_to_disk(self, fullname, value, mode):
         if not os.path.exists(self.destination_folder_path):
             os.makedirs(self.destination_folder_path)
-            self.mainwindow.lb_console.setText("destination folder created")
+            self.mainwindow.lb_console.setText(self.mainwindow.lb_console.text() + "\n" + "destination folder created")
             
         if not os.access(self.destination_folder_path, os.W_OK):
-            print("%s folder is not writeable.")
+            # print("%s folder is not writeable.")
+            self.mainwindow.lb_console.setText(self.mainwindow.lb_console.text() + "\n" + "folder is not writeable")
 
         head, tail = os.path.splitext(fullname)
         new_filename = head + "_" + str(value) + "_" + str(mode)[0:2] + ".txt"
@@ -66,15 +67,11 @@ class Writer():
                                       txt_filelist_rotation_all,
                                       mode):
         
-        # print(len(pil_imagelist_rotation_allImages))
-        # print(len(txt_filelist_rotation_all))
         for number in range(len(pil_imagelist_rotation_allImages)):
             img = pil_imagelist_rotation_allImages[number]
             bbox_list = txt_filelist_rotation_all[number]
             # print(img)
             self.write_rotated_files_oneImage([img], [bbox_list], mode)
-        
-        
         
         
     def write_rotate_bbox_list(self, bbox_list, fullname, angle, mode):
@@ -192,6 +189,8 @@ class Writer():
             # print(number, len(txt_filelist_scale))
             if number < len(txt_filelist_scale):
                 bbox_list, counter = txt_filelist_scale[number]
+                if not bbox_list:
+                    continue
                 self.write_scaled_bbox_list(bbox_list, fullname, offset, mode, counter)
             head, tail = os.path.splitext(fullname)
             new_file_name = head + "_" + str(offset) + "_" + \

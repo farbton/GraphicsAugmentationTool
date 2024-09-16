@@ -23,7 +23,7 @@ class Window(QMainWindow):
         uic.loadUi("AugmentationTool_GUI_test.ui", self)
         self.source_folder_path = "source/"
         self.destination_folder_path = "destination/"
-        self.setWindowTitle("Augmentation Tool for Images")
+        self.setWindowTitle("Image Augmentation Tool")
         self.screen = app.primaryScreen()
         self.width  = int(self.screen.size().width()/2)
         self.height = int(self.screen.size().height()/2)
@@ -51,19 +51,22 @@ class Window(QMainWindow):
     def print_info_text_in_gv(self):
         text_item = QGraphicsTextItem()
         text_item.setHtml("<html> <body> <h1 style=color:red;> \
-            Press the &lt;Source&gt; button to select the source folder or <br>\
+            1. Press the &lt;Source&gt; button to select the source folder or \
             press a button to manipulate the image in the default sourcefolder. <br> \
-            You can edit .jpg and .png files. <br> \
-            In mode translation, Steps/Degr are the number of shifted pixels \
+            2. Press the &lt;Destination&gt; button to select the destination folder or use the default folder <br> \
+            3. Each image manipulation has a field for values. Change the values if required <br> \
+            4. You can edit .jpg and .png files. <br> \
             </h1></body></html>")
         self.scene.addItem(text_item)
         self.gv_preview.setScene(self.scene)
         
     def print_info2_text_in_gv(self):
         self.scene.clear()
-        self.scene.addText("Wählen Sie jetzt ein Button für die \
-                           Bildmanipulation aus", 
-                           font=QFont("Times", 14))
+        text_item = QGraphicsTextItem()
+        text_item.setHtml("<html> <body> <h1 style=color:red;> \
+            Now select a button for image manipulation<br> \
+            </h1></body></html>")
+        self.scene.addItem(text_item)
         self.gv_preview.setScene(self.scene)
         
     def start(self):
@@ -90,6 +93,8 @@ class Window(QMainWindow):
         # self.print_info2_text_in_gv()
         self.print_sourcefolder_path()
         self.print_imagecounter()
+        self.print_text_in_console("source folder path: " + self.source_folder_path)
+        self.print_text_in_console("destination folder path: " + self.destination_folder_path)
         
     def print_imagecounter(self):
         counter = 0
@@ -112,19 +117,23 @@ class Window(QMainWindow):
             self.print_info2_text_in_gv()
             self.print_sourcefolder_path()
             self.print_imagecounter()
+            self.print_text_in_console("source folder path: " + self.source_folder_path)
      
     def print_sourcefolder_path(self):
-        self.lb_sourcefolder_path.setText(self.source_folder_path[:10] + "..." + self.source_folder_path[-30:])
+        self.destination_folder_path = os.getcwd() + "/" + self.destination_folder_path
+        self.lb_sourcefolder_path.setText(self.source_folder_path[:60] + "..." + self.source_folder_path[-60:])
+        # self.lb_sourcefolder_path.setText(self.source_folder_path)
      
     def print_destinationfolder_path(self):
-        self.lb_destinationfolder_path.setText("..." + self.destination_folder_path[-30:])
+        self.lb_destinationfolder_path.setText(self.destination_folder_path[:60] + "..." + self.destination_folder_path[-60:])
+        # self.lb_destinationfolder_path.setText(self.destination_folder_path)
         
     def open_destinationfolder(self):
         self.destination_folder_path = QFileDialog.getExistingDirectory()
         if self.destination_folder_path:
             self.writer = writer.Writer(self, self.source_folder_path, self.destination_folder_path)
             self.print_destinationfolder_path()
-            #print(self.destination_folder_path)
+            self.print_text_in_console("destination folder path: " + self.destination_folder_path)
                
     def show_filenames_in_listwidget_sourcefolder(self):
         self.lw_sourcefolder.clear()
@@ -134,7 +143,7 @@ class Window(QMainWindow):
             if name.endswith('.txt'):
                 self.txt_list.append(name)
         self.lw_sourcefolder.setCurrentRow(0)
-        self.determine_finished_images()
+        # self.determine_finished_images()
         
     def show_filenames_in_listwidget_destinationfolder(self):
         # self.destination_folder_path = os.getcwd() + "/" + self.destination_folder_path
@@ -220,8 +229,9 @@ class Window(QMainWindow):
         
         # pm_width_new  = 300
         # pm_height_new = 300
-        
-        pics_per_row = gv_width // 300
+        img_width = imagelist[0][0].width // 3
+        print(img_width)
+        pics_per_row = gv_width // img_width
         
         
         
@@ -255,12 +265,12 @@ class Window(QMainWindow):
             pixmap = QPixmap.fromImage(qimage)  
             
             if pm_width_new <= pm_height_new:
-                pixmap_item = self.scene.addPixmap(pixmap.scaled(int(300 * aspect_ratio), 300))
+                pixmap_item = self.scene.addPixmap(pixmap.scaled(int(img_width * aspect_ratio), img_width))
             else:     
-                pixmap_item = self.scene.addPixmap(pixmap.scaled(300, int(300 / aspect_ratio)))
+                pixmap_item = self.scene.addPixmap(pixmap.scaled(img_width, int(img_width / aspect_ratio)))
                 
             
-            pixmap_item.setPos(col*(300 + 10),row * (300 + 10))
+            pixmap_item.setPos(col*(img_width + 10),row * (img_width + 10))
             self.gv_preview.setScene(self.scene)
             col += 1                               
 
@@ -269,105 +279,103 @@ class Window(QMainWindow):
         self.mode = "brightness"
         self.info_text = False
         self.info2_text = False
-        self.print_mode_in_console()
+        self.print_text_in_console("mode: " + self.mode)
         self.brightness = brightness.Brightness(self.lw_sourcefolder,
                                                 self.source_folder_path, 
-                                                self.le_steps)
+                                                self.le_brightness)
         
         self.pil_imagelist_brightness = self.brightness.preview_brightness_oneImage()
         self.show_pil_imagelist_in_gv()
-        self.determine_finished_images()
+        self.determine_finished_images(self.le_brightness.text())
         
         
     def saturation(self):
         self.mode = "saturation"
         self.info_text = False
         self.info2_text = False
-        self.print_mode_in_console()
+        self.print_text_in_console("mode: " + self.mode)
         self.saturation = saturation.Saturation(self.lw_sourcefolder,
                                                 self.source_folder_path,
-                                                self.le_steps)
+                                                self.le_saturation)
         
         self.pil_imagelist_saturation = self.saturation.preview_saturation_oneImage()
         self.show_pil_imagelist_in_gv()
-        self.determine_finished_images()
+        self.determine_finished_images(self.le_saturation.text())
         
 
     def contrast(self):
         self.mode = "contrast"
         self.info_text = False
         self.info2_text = False
-        self.print_mode_in_console()
+        self.print_text_in_console("mode: " + self.mode)
         self.contrast = contrast.Contrast(self.lw_sourcefolder,
                                           self.source_folder_path,
-                                          self.le_steps)
+                                          self.le_contrast)
         
         self.pil_imagelist_contrast = self.contrast.preview_contrast_oneImage()
         self.show_pil_imagelist_in_gv()
-        self.determine_finished_images()
+        self.determine_finished_images(self.le_contrast.text())
         
 
     def sharpness(self):
         self.mode = "sharpness"
         self.info_text = False
         self.info2_text = False
-        self.print_mode_in_console()
+        self.print_text_in_console("mode: " + self.mode)
         self.sharpness = sharpness.Sharpness(self.lw_sourcefolder,
                                              self.source_folder_path,
-                                             self.le_steps)
+                                             self.le_sharpness)
         
         self.pil_imagelist_sharpness = self.sharpness.preview_sharpness_oneImage()
         self.show_pil_imagelist_in_gv()
-        self.determine_finished_images()
+        self.determine_finished_images(self.le_sharpness.text())
         
         
     def rotation(self):
         self.mode = "rotation"
         self.info_text = False
         self.info2_text = False
-        self.print_mode_in_console()
+        self.print_text_in_console("mode: " + self.mode)
         self.rotation = rotation.Rotation(self.lw_sourcefolder,
                                           self.source_folder_path,
-                                          self.le_steps)
+                                          self.le_rotation)
         
         self.pil_imagelist_rotation, self.txt_filelist_rotation = \
             self.rotation.preview_rotation_oneImage()
         self.show_pil_imagelist_rotation_in_gv()
-        self.determine_finished_images()
+        self.determine_finished_images(self.le_rotation.text())
         
     def translation(self):
         self.mode = "translation"
         self.info_text = False
         self.info2_text = False
-        self.print_mode_in_console()
-        time.sleep(0.5)
+        self.print_text_in_console("mode: " + self.mode)
         self.translation = translation.Translation(self.lw_sourcefolder,
                                                    self.source_folder_path,
-                                                   self.le_steps)
+                                                   self.le_translation)
         
         self.pil_imagelist_translation, self.txt_filelist_translation =\
             self.translation.preview_translation_oneImage()        
         self.show_pil_imagelist_in_gv()
-        self.determine_finished_images()
-        
-        
+        img_width = self.pil_imagelist_translation[0][0].width
+        self.determine_finished_images(img_width / int(self.le_translation.text()))
         
     def flip(self):
         self.mode = "flip"
         self.info_text = False
         self.info2_text = False
-        self.print_mode_in_console()
+        self.print_text_in_console("mode: " + self.mode)
         self.flip = flip.Flip(self.lw_sourcefolder, self.source_folder_path)
         self.pil_imagelist_flip, self.txt_filelist_flip =\
             self.flip.preview_flip_oneImage()
         self.show_pil_imagelist_in_gv()
-        self.determine_finished_images()
+        self.determine_finished_images(2)
         
     def noise(self):
         self.mode = "noise"
         self.info_text = False
         self.info2_text = False
-        self.print_mode_in_console()   
+        self.print_text_in_console("mode: " + self.mode)   
         self.noise = noise.Noise(self.lw_sourcefolder, 
                                  self.source_folder_path,
                                  self.comboBox_noise)
@@ -375,29 +383,27 @@ class Window(QMainWindow):
         self.pil_imagelist_noise = self.noise.preview_noise_oneImage()
         # print(len(self.pil_imagelist_noise))
         self.show_pil_imagelist_in_gv()
-        self.determine_finished_images()
+        self.determine_finished_images(1)
         
     def scale(self):
         self.mode = "scale"
         self.info_text = False
         self.info2_text = False
-        self.print_mode_in_console()
+        self.print_text_in_console("mode: " + self.mode)
         self.scale = scale.Scale(self.lw_sourcefolder, 
                                  self.source_folder_path,
-                                 self.le_steps)
+                                 self.le_scale)
         self.pil_imagelist_scale, self.txt_filelist_scale =\
             self.scale.preview_scale_oneImage()
         self.show_pil_imagelist_in_gv()
-        self.determine_finished_images()
-
-    def print_mode_in_console(self):
-        if self.mode == "translation":
-            txt = "Steps/Degr is the number of shifted pixels"
-            self.lb_console.setText("Mode: " + str(self.mode) +
-                                    "\n" + txt)
-        else:
-            self.lb_console.setText("Mode: " + str(self.mode))
-                
+        self.determine_finished_images(self.le_scale.text())
+    
+    def print_text_in_console(self, text):
+        self.lb_console.setText(self.lb_console.text() + "\n" + text)
+        # scrollBar = self.scrollArea.verticalScrollBar()
+        # scrollBar.setValue(scrollBar.maximum()+1)
+        self.scrollArea.verticalScrollBar().setValue(self.scrollArea.verticalScrollBar().maximum())
+        
     def save_one_file(self):
         if self.mode == "brightness":
             self.writer.write_files_to_disk(self.pil_imagelist_brightness,
@@ -495,9 +501,9 @@ class Window(QMainWindow):
                 
         self.show_filenames_in_listwidget_destinationfolder()
     
-    def determine_finished_images(self):    
+    def determine_finished_images(self, number):    
         count_listwidget = len(self.lw_sourcefolder)
-        summe = count_listwidget * int(self.le_steps.text())
+        summe = count_listwidget * int(number)
         self.lb_sum_of_images_2.setText(str(summe))
 
     # def mousePressEvent(self, event):
@@ -523,7 +529,7 @@ class Window(QMainWindow):
     def preview_item(self):
         # print("Funktion: preview_item")
         if self.mode == "brightness":
-            self.determine_finished_images()
+            # self.determine_finished_images()
             self.pil_imagelist_brightness = \
                 self.brightness.preview_brightness_oneImage()
             self.show_pil_imagelist_in_gv()
@@ -555,8 +561,8 @@ class Window(QMainWindow):
             # print("mainwindow.preview()_txt:", self.txt_filelist_flip)
             self.show_pil_imagelist_in_gv()
             
-        else:
-            self.lb_console.setText("Mode: " + str(self.mode))
+        # else:
+        #     self.lb_console.setText("Mode: " + str(self.mode))
 
 
 
