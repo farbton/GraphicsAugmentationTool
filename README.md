@@ -4,4 +4,4 @@
 
 ## Authors
 
-* **Kirko Große M. Sc.** BTU Cottbus-Senftenberg  June 2020 
+* **Kirko Große M. Sc.** BTU Cottbus-Senftenberg  2023
