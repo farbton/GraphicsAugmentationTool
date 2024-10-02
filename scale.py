@@ -21,8 +21,9 @@ import numpy as np
 
 
 class Scale(QtCore.QObject):
-    def __init__(self, lw_sourcefolder, source_folder_path, le_steps):
+    def __init__(self, main_window, lw_sourcefolder, source_folder_path, le_steps):
         QtCore.QObject.__init__(self)
+        self.main_window = main_window
         self.lw_sourcefolder = lw_sourcefolder
         self.source_folder_path = source_folder_path
         self.le_steps = le_steps
@@ -60,6 +61,8 @@ class Scale(QtCore.QObject):
     def change_scale_allImages(self, txt_list, mode, writer):
         pil_imagelist_scale_allImages = []
         txt_filelist_scale_all = []
+        self.main_window.progressBar.reset()
+        self.main_window.progressBar.setRange(0, len(self.lw_sourcefolder))
         
         for index in range(len(self.lw_sourcefolder)):
             item_name = self.lw_sourcefolder.item(index)
@@ -68,6 +71,7 @@ class Scale(QtCore.QObject):
             steps = int(self.le_steps.text())
             factor = round((2 / steps), 2)
             value  = factor
+            self.main_window.progressBar.setValue(index+1)
             
             with Image.open(item_path, mode='r') as pil_image:
                 counter = 0

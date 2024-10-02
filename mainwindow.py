@@ -7,7 +7,7 @@ Created on Sat Nov 26 20:23:50 2022
 from PyQt5 import QtCore, uic
 from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QFileDialog,\
     QGraphicsPixmapItem, QGridLayout, QLabel, QGraphicsItem, QGraphicsTextItem
-from PyQt5.QtGui import QPixmap, QPen, QFont, QImage, QColor
+from PyQt5.QtGui import QPixmap, QPen, QFont, QImage, QColor, QImageReader
 from PIL import Image, ImageEnhance , ImageQt, ImageShow
 import reader, writer, brightness, saturation, contrast, sharpness, \
     rotation, flip, translation, scale, noise
@@ -15,14 +15,17 @@ import os, numpy as np
 import time
 import io
 testwert = 0
+import matplotlib.pyplot as plt
 
 class Window(QMainWindow):
     
     def __init__(self, app):       
         super(Window, self).__init__()       
-        uic.loadUi("AugmentationTool_GUI_test.ui", self)
+        uic.loadUi("AugmentationTool_GUI.ui", self)
         self.source_folder_path = "source/"
         self.destination_folder_path = "destination/"
+        # self.source_folder_path = "C:/Users/Admin/Nextcloud/Gemeinsame Dateien/Fg-Medientechnik_Lehrstuhl/3_Projekte/KI@MINT/HariboAufnahmen/Haribo_Orginalaufnahmen_2.Versuch/40cm/"
+        # self.destination_folder_path = "C:/KI_MINT/Haribo_Bilder_ohne_Cloud/"
         self.setWindowTitle("Image Augmentation Tool")
         self.screen = app.primaryScreen()
         self.width  = int(self.screen.size().width()/2)
@@ -87,6 +90,9 @@ class Window(QMainWindow):
      
     def init_source_path(self):
         self.source_folder_path = os.getcwd() + "/" + self.source_folder_path
+        # print("init_source_path: ", self.source_folder_path, "\n")
+        self.destination_folder_path = os.getcwd() + "/" + self.destination_folder_path
+        # print("init_source_path: ", self.destination_folder_path, "\n")
         self.writer = writer.Writer(self, self.source_folder_path, self.destination_folder_path)
         self.list_filenames = self.reader.read_sourcefolder(self.source_folder_path)
         self.show_filenames_in_listwidget_sourcefolder()
@@ -112,6 +118,7 @@ class Window(QMainWindow):
             self.info_text  = False
             self.info2_text = True
             self.writer = writer.Writer(self, self.source_folder_path, self.destination_folder_path)
+            # print("open_sourcefolder: ", self.source_folder_path, "\n")
             self.list_filenames = self.reader.read_sourcefolder(self.source_folder_path)
             self.show_filenames_in_listwidget_sourcefolder()
             self.print_info2_text_in_gv()
@@ -120,7 +127,6 @@ class Window(QMainWindow):
             self.print_text_in_console("source folder path: " + self.source_folder_path)
      
     def print_sourcefolder_path(self):
-        self.destination_folder_path = os.getcwd() + "/" + self.destination_folder_path
         self.lb_sourcefolder_path.setText(self.source_folder_path[:60] + "..." + self.source_folder_path[-60:])
         # self.lb_sourcefolder_path.setText(self.source_folder_path)
      
@@ -147,6 +153,7 @@ class Window(QMainWindow):
         
     def show_filenames_in_listwidget_destinationfolder(self):
         # self.destination_folder_path = os.getcwd() + "/" + self.destination_folder_path
+        # print("show_filenames_in_listwidget_destinationfolder: ",self.destination_folder_path, "\n")
         list_filenames = self.reader.read_sourcefolder(self.destination_folder_path)
         self.lw_destinationfolder.clear()
         for name in list_filenames:
@@ -168,6 +175,7 @@ class Window(QMainWindow):
         if self.mode == "brightness":
             imagelist = self.pil_imagelist_brightness
             # print(len(imagelist))
+            
         if self.mode == "saturation":
             imagelist = self.pil_imagelist_saturation
         if self.mode == "contrast":
@@ -209,7 +217,11 @@ class Window(QMainWindow):
             pm_height_new = int(gv_height / images_per_col)
 
             qimage = QImage(image.tobytes(), image.width, image.height, imageformat)#Format_RGB888
-            
+            # qimage = qimage.convertToFormat(QImage.Format_ARGB32)
+            # print(qimage.format())
+            # print("__", qimage.isNull())
+            # time.sleep(.5)
+            # plt.imshow(qimage)
             pixmap = QPixmap.fromImage(qimage)
             pixmap_item = self.scene.addPixmap(pixmap.scaled(pm_width_new, pm_height_new ))
             pixmap_item.setPos(col*(pm_width_new+10),row * (pm_height_new + 10))
@@ -230,7 +242,7 @@ class Window(QMainWindow):
         # pm_width_new  = 300
         # pm_height_new = 300
         img_width = imagelist[0][0].width // 3
-        print(img_width)
+        # print(img_width)
         pics_per_row = gv_width // img_width
         
         
@@ -240,12 +252,12 @@ class Window(QMainWindow):
             aspect_ratio = image.width / image.height
             # print("aspect_ratio: ", aspect_ratio)
             
-            if image.mode == "RGB":
-                imageformat = QImage.Format_RGB888
-            if image.mode == "RGBA":
-                imageformat = QImage.Format_RGBA8888
-            if image.mode == "L":
-                imageformat = QImage.Format_Grayscale8
+            # if image.mode == "RGB":
+            #     imageformat = QImage.Format_RGB888
+            # if image.mode == "RGBA":
+            #     imageformat = QImage.Format_RGBA8888
+            # if image.mode == "L":
+            #     imageformat = QImage.Format_Grayscale8
                 
             if (i % pics_per_row  == 0) and (i > 0) :
                 row += 1
@@ -262,8 +274,8 @@ class Window(QMainWindow):
                             image.height,
                             QImage.Format_ARGB32)
      
+            # print(qimage.format())
             pixmap = QPixmap.fromImage(qimage)  
-            
             if pm_width_new <= pm_height_new:
                 pixmap_item = self.scene.addPixmap(pixmap.scaled(int(img_width * aspect_ratio), img_width))
             else:     
@@ -280,7 +292,8 @@ class Window(QMainWindow):
         self.info_text = False
         self.info2_text = False
         self.print_text_in_console("mode: " + self.mode)
-        self.brightness = brightness.Brightness(self.lw_sourcefolder,
+        self.brightness = brightness.Brightness(self,
+                                                self.lw_sourcefolder,
                                                 self.source_folder_path, 
                                                 self.le_brightness)
         
@@ -294,7 +307,8 @@ class Window(QMainWindow):
         self.info_text = False
         self.info2_text = False
         self.print_text_in_console("mode: " + self.mode)
-        self.saturation = saturation.Saturation(self.lw_sourcefolder,
+        self.saturation = saturation.Saturation(self,
+                                                self.lw_sourcefolder,
                                                 self.source_folder_path,
                                                 self.le_saturation)
         
@@ -308,7 +322,8 @@ class Window(QMainWindow):
         self.info_text = False
         self.info2_text = False
         self.print_text_in_console("mode: " + self.mode)
-        self.contrast = contrast.Contrast(self.lw_sourcefolder,
+        self.contrast = contrast.Contrast(self, 
+                                          self.lw_sourcefolder,
                                           self.source_folder_path,
                                           self.le_contrast)
         
@@ -322,7 +337,8 @@ class Window(QMainWindow):
         self.info_text = False
         self.info2_text = False
         self.print_text_in_console("mode: " + self.mode)
-        self.sharpness = sharpness.Sharpness(self.lw_sourcefolder,
+        self.sharpness = sharpness.Sharpness(self, 
+                                             self.lw_sourcefolder,
                                              self.source_folder_path,
                                              self.le_sharpness)
         
@@ -336,7 +352,8 @@ class Window(QMainWindow):
         self.info_text = False
         self.info2_text = False
         self.print_text_in_console("mode: " + self.mode)
-        self.rotation = rotation.Rotation(self.lw_sourcefolder,
+        self.rotation = rotation.Rotation(self, 
+                                          self.lw_sourcefolder,
                                           self.source_folder_path,
                                           self.le_rotation)
         
@@ -350,7 +367,8 @@ class Window(QMainWindow):
         self.info_text = False
         self.info2_text = False
         self.print_text_in_console("mode: " + self.mode)
-        self.translation = translation.Translation(self.lw_sourcefolder,
+        self.translation = translation.Translation(self, 
+                                                   self.lw_sourcefolder,
                                                    self.source_folder_path,
                                                    self.le_translation)
         
@@ -365,7 +383,7 @@ class Window(QMainWindow):
         self.info_text = False
         self.info2_text = False
         self.print_text_in_console("mode: " + self.mode)
-        self.flip = flip.Flip(self.lw_sourcefolder, self.source_folder_path)
+        self.flip = flip.Flip(self, self.lw_sourcefolder, self.source_folder_path)
         self.pil_imagelist_flip, self.txt_filelist_flip =\
             self.flip.preview_flip_oneImage()
         self.show_pil_imagelist_in_gv()
@@ -376,7 +394,8 @@ class Window(QMainWindow):
         self.info_text = False
         self.info2_text = False
         self.print_text_in_console("mode: " + self.mode)   
-        self.noise = noise.Noise(self.lw_sourcefolder, 
+        self.noise = noise.Noise(self, 
+                                 self.lw_sourcefolder, 
                                  self.source_folder_path,
                                  self.comboBox_noise)
         
@@ -390,7 +409,8 @@ class Window(QMainWindow):
         self.info_text = False
         self.info2_text = False
         self.print_text_in_console("mode: " + self.mode)
-        self.scale = scale.Scale(self.lw_sourcefolder, 
+        self.scale = scale.Scale(self, 
+                                 self.lw_sourcefolder, 
                                  self.source_folder_path,
                                  self.le_scale)
         self.pil_imagelist_scale, self.txt_filelist_scale =\
@@ -532,6 +552,8 @@ class Window(QMainWindow):
             # self.determine_finished_images()
             self.pil_imagelist_brightness = \
                 self.brightness.preview_brightness_oneImage()
+            # print("preview_item brightness")
+            # time.sleep(1)
             self.show_pil_imagelist_in_gv()
             
         if self.mode == "saturation":

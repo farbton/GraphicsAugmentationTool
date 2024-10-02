@@ -12,8 +12,9 @@ from PIL import Image, ImageChops
 import time
 
 class Translation(QtCore.QObject):
-    def __init__(self, lw_sourcefolder, source_folder_path, le_steps):
+    def __init__(self, main_window, lw_sourcefolder, source_folder_path, le_steps):
         QtCore.QObject.__init__(self)
+        self.main_window = main_window
         self.lw_sourcefolder = lw_sourcefolder
         self.source_folder_path = source_folder_path
         self.le_steps = le_steps
@@ -51,6 +52,8 @@ class Translation(QtCore.QObject):
     def change_translation_allImages(self, txt_list, mode, writer):
         pil_imagelist_translation_allImages = []
         txt_filelist_translation_all  = []
+        self.main_window.progressBar.reset()
+        self.main_window.progressBar.setRange(0, len(self.lw_sourcefolder))
 
         for index in range(len(self.lw_sourcefolder)):
             item_name = self.lw_sourcefolder.item(index)
@@ -58,6 +61,7 @@ class Translation(QtCore.QObject):
             head, tail = os.path.splitext(str(item_name.text()))
             offset       = int(self.le_steps.text())
             value  = offset
+            self.main_window.progressBar.setValue(index+1)
             
             with Image.open(item_path, mode='r') as pil_image:
                 

@@ -18,8 +18,9 @@ from PyQt5.QtCore import QBuffer
 import qimage2ndarray
 
 class Noise(QtCore.QObject):
-    def __init__(self, lw_sourcefolder, source_folder_path, comboBox_noise):
+    def __init__(self, main_window, lw_sourcefolder, source_folder_path, comboBox_noise):
         QtCore.QObject.__init__(self)
+        self.main_window = main_window
         self.lw_sourcefolder = lw_sourcefolder
         self.source_folder_path = source_folder_path
         # self.le_steps = le_steps
@@ -55,10 +56,14 @@ class Noise(QtCore.QObject):
 
     def change_noise_allImages(self, txt_list, mode, writer):
         pil_imagelist_noise_allImages = []
+        self.main_window.progressBar.reset()
+        self.main_window.progressBar.setRange(0, len(self.lw_sourcefolder))
+        
         for index in range(len(self.lw_sourcefolder)):
 
             item_name = self.lw_sourcefolder.item(index)
             item_path = os.path.join(self.source_folder_path, item_name.text())
+            self.main_window.progressBar.setValue(index+1)
             
             with Image.open(item_path, mode='r') as pil_image:
                 img_noise = self.change_noise_oneImage(pil_image)

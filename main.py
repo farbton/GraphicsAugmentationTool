@@ -13,6 +13,7 @@ Created on Sat Nov 26 20:20:10 2022
     tr = translation
     sc = scale
     no = noise
+    9 Augmentations
 """
 
 import sys; print("sys.version: ", sys.version)

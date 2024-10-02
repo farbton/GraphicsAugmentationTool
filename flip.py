@@ -11,8 +11,9 @@ from PyQt5 import QtCore
 from PIL import Image, ImageOps
 
 class Flip(QtCore.QObject):
-    def __init__(self, lw_sourcefolder, source_folder_path):
+    def __init__(self, main_window, lw_sourcefolder, source_folder_path):
         QtCore.QObject.__init__(self)
+        self.main_window = main_window
         self.lw_sourcefolder = lw_sourcefolder
         self.source_folder_path = source_folder_path
 
@@ -101,12 +102,16 @@ class Flip(QtCore.QObject):
     def flip_allImages(self, txt_list, mode, writer):
         pil_imagelist_flip_mirror_allImages = []
         txt_filelist_flip_mirror_allImages  = []
+        self.main_window.progressBar.reset()
+        self.main_window.progressBar.setRange(0, len(self.lw_sourcefolder))
         
         for index in range(len(self.lw_sourcefolder)):
             # print(index)
             item_name = self.lw_sourcefolder.item(index)
             item_path = os.path.join(self.source_folder_path, item_name.text())
-            head, tail = os.path.splitext(str(item_name.text()))            
+            head, tail = os.path.splitext(str(item_name.text()))  
+            self.main_window.progressBar.setValue(index+1)
+            
             with Image.open(item_path, mode='r') as pil_image:
 
                 img_flip = self.flip_oneImage(pil_image)

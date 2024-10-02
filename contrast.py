@@ -9,8 +9,9 @@ from PyQt5 import QtCore
 from PIL import Image, ImageEnhance
 
 class Contrast(QtCore.QObject):
-    def __init__(self, lw_sourcefolder, source_folder_path, le_steps):
+    def __init__(self, main_window, lw_sourcefolder, source_folder_path, le_steps):
         QtCore.QObject.__init__(self)
+        self.main_window = main_window
         self.lw_sourcefolder = lw_sourcefolder
         self.source_folder_path = source_folder_path
         self.le_steps = le_steps
@@ -41,13 +42,17 @@ class Contrast(QtCore.QObject):
     
     def change_contrast_allImages(self, txt_list, mode, writer):
         pil_imagelist_contrast_allImages = []
+        self.main_window.progressBar.reset()
+        self.main_window.progressBar.setRange(0, len(self.lw_sourcefolder))
+        
         for index in range(len(self.lw_sourcefolder)):
             steps = int(self.le_steps.text())
             factor = round((2 / steps), 2)
             value  = factor
             item_name = self.lw_sourcefolder.item(index)
             item_path = os.path.join(self.source_folder_path, item_name.text())
-           
+            self.main_window.progressBar.setValue(index+1)
+            
             with Image.open(item_path, mode='r') as pil_image:
 
                 for j in range(steps):

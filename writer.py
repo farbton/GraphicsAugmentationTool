@@ -70,7 +70,7 @@ class Writer():
         for number in range(len(pil_imagelist_rotation_allImages)):
             img = pil_imagelist_rotation_allImages[number]
             bbox_list = txt_filelist_rotation_all[number]
-            # print(img)
+            # print(mode)
             self.write_rotated_files_oneImage([img], [bbox_list], mode)
         
         
